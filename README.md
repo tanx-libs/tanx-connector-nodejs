@@ -7,7 +7,7 @@
 <div align="center">
 
 [![npm version](https://img.shields.io/npm/v/@tanx-libs/tanx-connector)](https://www.npmjs.org/package/@tanx-libs/tanx-connector)
-[![Build status](https://img.shields.io/github/actions/workflow/status/Brine-Finance-Libs/brine-connector-nodejs/main.yml)](https://github.com/Brine-Finance-Libs/brine-connector-nodejs/actions/workflows/main.yml)
+[![Build status](https://img.shields.io/github/actions/workflow/status/tanx-libs/tanx-connector-nodejs/main.yml)](https://github.com/tanx-libs/tanx-connector-nodejs/actions/workflows/main.yml)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@tanx-libs/tanx-connector)](https://bundlephobia.com/package/@tanx-libs/tanx-connector@latest)
 
 </div>

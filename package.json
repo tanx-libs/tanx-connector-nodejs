@@ -1,6 +1,6 @@
 {
   "name": "@tanx-libs/tanx-connector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A NodeJS Connector for the tanX API",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -39,7 +39,7 @@
     }
   },
   "keywords": [
-    "brine",
+    "tanX",
     "connector",
     "finance",
     "api",
