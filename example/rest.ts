@@ -25,7 +25,7 @@ const main = async () => {
     // handle in try catch block
     try {
       // create a rest client instance (you can pass option)
-      const client = new Client()
+      const client = new Client('testnet')
 
       //you can use public endpoints right away
       const test = await client.testConnection()
@@ -49,13 +49,14 @@ const main = async () => {
       // const order = await client.createCompleteOrder(nonceBody, privateKey)
 
       // const orderNonce = await client.createOrderNonce(nonceBody)
-      const userSignature = createUserSignature(privateKey, 'mainnet') // or sign it yourself
+      const userSignature = createUserSignature(privateKey, 'testnet') // or sign it yourself
       const keyPair = getKeyPairFromSignature(userSignature.signature)
       const stark_public_key = keyPair.getPublic().getX().toString('hex')
       const stark_private_key = keyPair.getPrivate().toString('hex')
       const provider = new ethers.providers.JsonRpcProvider(
         process.env.RPC_PROVIDER,
       )
+
       const signer = new Wallet(privateKey, provider)
 
       const res = await client.getBalance()
@@ -87,7 +88,6 @@ const main = async () => {
         console.log(e)
       } else {
         console.log(e)
-
         console.log((e as AxiosError<Response<string>>)?.response?.data)
       }
     }
@@ -113,7 +113,7 @@ const ethereumDepositAndWithdrawal = async () => {
       const loginRes = await client.completeLogin(ethAddress, privateKey)
       console.log(loginRes.payload)
 
-      const userSignature = createUserSignature(privateKey, 'mainnet') // or sign it yourself
+      const userSignature = createUserSignature(privateKey, 'testnet') // or sign it yourself
       const keyPair = getKeyPairFromSignature(userSignature.signature)
       const stark_public_key = keyPair.getPublic().getX().toString('hex')
       // const stark_private_key = keyPair.getPrivate().toString('hex')
@@ -218,13 +218,13 @@ const polygonDepositAndWithdrawal = async () => {
     // handle in try catch block
     try {
       // create a rest client instance (you can pass option)
-      const client = new Client('mainnet')
+      const client = new Client('testnet')
 
       // login to use private endpoints
       const loginRes = await client.completeLogin(ethAddress, privateKey)
       console.log(loginRes.payload)
 
-      const userSignature = createUserSignature(privateKey, 'mainnet') // or sign it yourself
+      const userSignature = createUserSignature(privateKey, 'testnet') // or sign it yourself
       const keyPair = getKeyPairFromSignature(userSignature.signature)
 
       const provider = new ethers.providers.JsonRpcProvider(
@@ -297,13 +297,13 @@ const internalTransfers = async () => {
     // handle in try catch block
     try {
       // create a rest client instance (you can pass option)
-      const client = new Client('mainnet')
+      const client = new Client('testnet')
       // login to use private endpoints
       const loginRes = await client.completeLogin(ethAddress, privateKey)
       console.log(loginRes.payload)
 
       // Getting the L2 keypair
-      const keypair = generateKeyPairFromEthPrivateKey(privateKey, 'mainnet') // default is mainnet
+      const keypair = generateKeyPairFromEthPrivateKey(privateKey, 'testnet') // default is mainnet
 
       // Executing the internalTransfer
       const internalTransferResponse =
@@ -352,7 +352,7 @@ const internalTransfers = async () => {
 // internalTransfers()
 
 const getL2Keys = async (ethPrivateKey: string) => {
-  const keypair = generateKeyPairFromEthPrivateKey(ethPrivateKey, 'mainnet') // default is mainnet
+  const keypair = generateKeyPairFromEthPrivateKey(ethPrivateKey, 'testnet') // default is mainnet
 
   const stark_public_key = keypair.getPublic().getX().toString('hex')
   const stark_private_key = keypair.getPrivate().toString('hex')

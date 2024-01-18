@@ -125,8 +125,8 @@ describe('Brine Connector', () => {
 
     describe('Account', () => {
       it('Login', async () => {
-        mock1.onPost('/sapi/v1/auth/v2/nonce/').reply(200, responses.loginNonce)
-        mock1.onPost('/sapi/v1/auth/v2/login/').reply(200, responses.login)
+        mock1.onPost('/sapi/v2/auth/nonce/').reply(200, responses.loginNonce)
+        mock1.onPost('/sapi/v2/auth/login/').reply(200, responses.login)
         const res = await client.completeLogin(ethAddress!, privateKey!)
         expect(res).to.not.be.an('undefined')
         expect(res).to.have.property('status')
@@ -136,7 +136,7 @@ describe('Brine Connector', () => {
 
       it('Login Invalid Eth Address 400', async () => {
         mock2
-          .onPost('/sapi/v1/auth/v2/nonce/')
+          .onPost('/sapi/v2/auth/nonce/')
           .reply(400, responses.loginInvalidEthAddress)
         try {
           const res = await client2.completeLogin('test', privateKey!)
@@ -152,7 +152,7 @@ describe('Brine Connector', () => {
 
       it('Login Incorrect Address 400', async () => {
         mock2
-          .onPost('/sapi/v1/auth/v2/login/')
+          .onPost('/sapi/v2/auth/login/')
           .reply(200, responses.loginIncorrectAddress)
         try {
           const res = await client.completeLogin(

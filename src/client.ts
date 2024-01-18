@@ -86,10 +86,13 @@ export class Client {
   setRefreshToken: (token: string | null) => void
   private refreshToken?: string | null
   private accessToken?: string | null
-  option: 'mainnet'
+  option: 'mainnet' | 'testnet'
 
-  constructor(option: 'mainnet' = 'mainnet') {
-    const baseURL = 'https://api.tanx.fi'
+  constructor(option: 'mainnet' | 'testnet' = 'mainnet') {
+    const baseURL =
+      option === 'testnet'
+        ? 'https://api-testnet.tanx.fi'
+        : 'https://api.tanx.fi'
     const axios = new AxiosInstance(this.refreshTokens, baseURL)
     this.axiosInstance = axios.axiosInstance
     this.setAccessToken = (token: string | null) => {
@@ -154,12 +157,11 @@ export class Client {
 
   async getNonce(ethAddress: string): Promise<Response<string>> {
     const nonceRes = await this.axiosInstance.post<Response<string>>(
-      '/sapi/v1/auth/v2/nonce/',
+      '/sapi/v2/auth/nonce/',
       {
         eth_address: ethAddress,
       },
     )
-
     return nonceRes.data
   }
 
@@ -168,7 +170,7 @@ export class Client {
     userSignature: string,
   ): Promise<LoginResponse> {
     const loginRes = await this.axiosInstance.post<LoginResponse>(
-      '/sapi/v1/auth/v2/login/',
+      '/sapi/v2/auth/login/',
       {
         eth_address: ethAddress,
         user_signature: userSignature,
