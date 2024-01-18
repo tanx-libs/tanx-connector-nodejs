@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.1.0
+
+### Minor Changes
+
+- Support for testnet
+
 ## 1.0.1
 
 ### Patch Changes
