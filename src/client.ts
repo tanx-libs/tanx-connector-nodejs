@@ -89,9 +89,10 @@ export class Client {
   option: 'mainnet' | 'testnet'
 
   constructor(option: 'mainnet' | 'testnet' = 'mainnet') {
-    const baseURL = 'testnet'
-      ? 'https://api-testnet.tanx.fi'
-      : 'https://api.tanx.fi'
+    const baseURL =
+      option === 'testnet'
+        ? 'https://api-testnet.tanx.fi'
+        : 'https://api.tanx.fi'
     const axios = new AxiosInstance(this.refreshTokens, baseURL)
     this.axiosInstance = axios.axiosInstance
     this.setAccessToken = (token: string | null) => {
