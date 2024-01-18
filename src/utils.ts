@@ -17,7 +17,7 @@ import { BigNumber } from 'ethers'
 export const signMsgHash = (
   nonce: CreateOrderNoncePayload,
   privateKey: string,
-  option: 'mainnet' = 'mainnet',
+  option: 'mainnet' | 'testnet' = 'mainnet',
 ): CreateNewOrderBody => {
   const userSignature = createUserSignature(privateKey, option)
   return signOrderNonceWithSignature(userSignature, nonce)
@@ -25,10 +25,12 @@ export const signMsgHash = (
 
 export const createUserSignature = (
   privateKey: string,
-  option: 'mainnet' = 'mainnet',
+  option: 'mainnet' | 'testnet' = 'mainnet',
 ): Sign => {
   const msgToBeSigned =
-    'Get started with TanX. Make sure the origin is https://trade.tanx.fi'
+    option === 'testnet'
+      ? "Click sign to verify you're a human - TanX Finance"
+      : 'Get started with TanX. Make sure the origin is https://trade.tanx.fi'
   const userSignature = signMsg(msgToBeSigned, privateKey)
   return userSignature
 }
@@ -87,7 +89,7 @@ export const signWithdrawalTxMsgHash = (
 
 export const generateKeyPairFromEthPrivateKey = (
   ethPrivateKey: string,
-  option: 'mainnet' = 'mainnet',
+  option: 'mainnet' | 'testnet' = 'mainnet',
 ) => {
   const signature = createUserSignature(ethPrivateKey, option)
   return getKeyPairFromSignature(signature.signature)

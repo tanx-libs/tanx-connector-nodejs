@@ -8,7 +8,7 @@ const main = async () => {
     const privateKey = process.env.PRIVATE_KEY
     const ethAddress = process.env.ETH_ADDRESS
     // create a rest client instance if you need to create a private websocket
-    const client = new Client()
+    const client = new Client('testnet')
     if (privateKey && ethAddress) {
       // create a public websocket instance
       const wsClient = new WsClient('public')

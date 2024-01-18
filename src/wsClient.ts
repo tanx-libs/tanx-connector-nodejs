@@ -6,11 +6,12 @@ export class WsClient {
 
   constructor(
     type: 'public' | 'private',
-    option: 'mainnet' = 'mainnet',
+    option: 'mainnet' | 'testnet' = 'mainnet',
     jwt?: string | null,
   ) {
     let connection = ''
-    const baseUrl = 'wss://api.tanx.fi'
+    const baseUrl =
+      option === 'testnet' ? 'wss://api-testnet.tanx.fi' : 'wss://api.tanx.fi'
     if (type === 'public') connection = `${baseUrl}/public`
     else {
       if (!jwt)

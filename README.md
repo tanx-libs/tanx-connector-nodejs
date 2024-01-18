@@ -1,7 +1,7 @@
 <h1 align="center">tanX Connector NodeJS</h1>
 
 <p align="center">
-  The official NodeJS connector for <a href="https://docs.tanx.fi/api-documentation">tanX's API</a> 🚀
+  The official NodeJS connector for <a href="https://docs.tanx.fi/tech/api-documentation">tanX's API</a> 🚀
 </p>
 
 <div align="center">
@@ -61,6 +61,8 @@ Create a new instance.
 
 ```ts
 const client = new Client()
+// or
+const client = new Client('testnet') // default mainnet
 ```
 
 ### General Endpoints
@@ -235,7 +237,7 @@ import {
 } from '@tanx-libs/tanx-connector'
 
 const orderNonce = await client.createOrderNonce(nonceBody)
-const userSignature = createUserSignature(ethPrivateKey, 'mainnet')
+const userSignature = createUserSignature(ethPrivateKey, 'testnet') // or sign it yourself; default mainnet
 const keyPair = getKeyPairFromSignature(userSignature.signature)
 const signedBody = signOrderWithStarkKeys(keyPair, orderNonce.payload)
 const order = await client.createNewOrder(signedBody)
@@ -286,8 +288,10 @@ Create a new instance
 ```ts
 const wsClient = new WsClient('public')
 // or
+const wsClient = new WsClient('public', 'testnet') // default is 'mainnet'
+// or
 const loginRes = await client.completeLogin(ethAddress, ethPrivateKey)
-const wsClient = new WsClient('private', 'mainnet', loginRes.token.access)
+const wsClient = new WsClient('private', 'testnet', loginRes.token.access)
 // pass in jwt as 3rd argument for private connections
 ```
 
@@ -361,7 +365,7 @@ You can create your own stark key pairs using the utility functions below
 ```ts
 import { generateKeyPairFromEthPrivateKey } from '@tanx-libs/tanx-connector'
 
-const keypair = generateKeyPairFromEthPrivateKey(ethPrivateKey, 'mainnet') // default is mainnet
+const keypair = generateKeyPairFromEthPrivateKey(ethPrivateKey, 'testnet') // default is mainnet
 
 const stark_public_key = keypair.getPublic().getX().toString('hex')
 const stark_private_key = keypair.getPrivate().toString('hex')
@@ -380,7 +384,7 @@ To get started with the feature, follow these two steps:
 ```ts
 import { generateKeyPairFromEthPrivateKey } from '@tanx-libs/tanx-connector'
 
-const keypair = generateKeyPairFromEthPrivateKey(ethPrivateKey, 'mainnet')
+const keypair = generateKeyPairFromEthPrivateKey(ethPrivateKey, 'testnet')
 ```
 
 ### Available methods:
@@ -442,9 +446,9 @@ In this method, you will use an ETH private key and an RPC URL to execute a depo
 
 ```javascript
   const res = await client.depositFromEthereumNetwork(
-    process.env.RPC_PROVIDER as string, // Use 'ethereum mainnet' for the mainnet.
+    process.env.RPC_PROVIDER as string, // Use 'goerli' for the testnet and 'ethereum mainnet' for the mainnet.
     privateKey, // Your ETH private key.
-    'mainnet', // Network allowed values are 'mainnet'.
+    'testnet', // Network allowed values are 'testnet' or 'mainnet'.
     'eth', // Enter the coin symbol.
     0.00001, // Enter the amount you want to deposit.
   );
@@ -459,7 +463,7 @@ This method involves using a custom provider and signer, which can be created us
 import { Wallet, ethers } from 'ethers'
 
 const provider = new ethers.providers.JsonRpcProvider(
-  process.env.RPC_PROVIDER, // Use 'ethereum mainnet' for the mainnet.
+  process.env.RPC_PROVIDER, // Use 'goerli' for testnet and 'ethereum mainnet' for the mainnet.
 )
 
 const signer = new Wallet(privateKey, provider)
@@ -483,7 +487,7 @@ In this method, you will use an ETH private key and an RPC URL to execute a Poly
 
 ```javascript
   const depositRes = await client.depositFromPolygonNetwork(
-    process.env.RPC_PROVIDER as string, // Use 'Polygon mainnet' for the mainnet.
+    process.env.RPC_PROVIDER as string, // Use 'Polygon Mumbai' for the testnet and 'Polygon mainnet' for the mainnet.
     privateKey, // Your ETH private key.
     'btc', // Enter the coin symbol.
     0.00001, // Enter the amount you want to deposit.
@@ -499,7 +503,7 @@ This method involves using a custom provider and signer, which can be created us
 import { Wallet, ethers } from 'ethers'
 
 const provider = new ethers.providers.JsonRpcProvider(
-  process.env.RPC_PROVIDER, // Use 'Polygon mainnet' for the mainnet.
+  process.env.RPC_PROVIDER, // Use 'Polygon Mumbai' for the testnet and 'Polygon mainnet' for the mainnet.
 )
 
 const signer = new Wallet(privateKey, provider)
