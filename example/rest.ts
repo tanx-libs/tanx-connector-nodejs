@@ -233,12 +233,12 @@ const polygonDepositAndWithdrawal = async () => {
       const signer = new Wallet(privateKey, provider)
 
       // deposit with eth private key
-      const deposit = await client.depositFromPolygonNetwork(
-        process.env.RPC_PROVIDER as string,
-        privateKey,
-        'btc',
-        '0.00001',
-      )
+      // const deposit = await client.depositFromPolygonNetwork(
+      //   process.env.RPC_PROVIDER as string,
+      //   privateKey,
+      //   'btc',
+      //   '0.00001',
+      // )
 
       // const depositWithSigner =
       //   await client.depositFromPolygonNetworkWithSigner(
@@ -248,8 +248,24 @@ const polygonDepositAndWithdrawal = async () => {
       //     0.0001,
       //   )
 
+      const deposit = await client.crossChainDeposit(
+        process.env.RPC_PROVIDER as string,
+        privateKey,
+        'usdc',
+        '2',
+        'LINEA',
+      )
+
+      // const deposit = await client.crossChainDepositWithSigner(
+      //   signer,
+      //   provider,
+      //   'usdc',
+      //   '20',
+      //   'LINEA',
+      // )
+
       const depositsList = await client.listDeposits({
-        page: 2,
+        page: 1,
         limit: 1,
         network: 'POLYGON',
       })
@@ -283,8 +299,45 @@ const polygonDepositAndWithdrawal = async () => {
   }
 }
 
+const approveAllowance = async () => {
+  // load your privateKey and walletAddress
+  const privateKey = process.env.PRIVATE_KEY
+  const ethAddress = process.env.ETH_ADDRESS
+  // const brineOrganizationKey = process.env.BRINE_ORGANIZATION_KEY
+  // const brineApiKey = process.env.BRINE_API_KEY
+
+  if (privateKey && ethAddress) {
+    // handle in try catch block
+    try {
+      // create a rest client instance (you can pass option)
+      const client = new Client('testnet')
+
+      // login to use private endpoints
+      const loginRes = await client.completeLogin(ethAddress, privateKey)
+      console.log(loginRes.payload)
+
+      const userSignature = createUserSignature(privateKey, 'testnet') // or sign it yourself
+      const keyPair = getKeyPairFromSignature(userSignature.signature)
+
+      const provider = new ethers.providers.JsonRpcProvider(
+        process.env.RPC_PROVIDER,
+      )
+      const signer = new Wallet(privateKey, provider)
+      const res = await client.setCrossChainAllowance('usdc', signer, 'LINEA')
+      console.log({ res })
+    } catch (e) {
+      // Error: AuthenticationError | AxiosError
+      if (isAuthenticationError(e)) {
+        console.log(e)
+      } else {
+        console.log(e)
+      }
+    }
+  }
+}
+
+approveAllowance()
 // polygonDepositAndWithdrawal()
-// ethereumDepositAndWithdrawal()
 
 const internalTransfers = async () => {
   // load your privateKey and walletAddress

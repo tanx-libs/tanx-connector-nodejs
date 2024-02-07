@@ -104,9 +104,12 @@ export const getNonce = (
   return baseNonce.then((nonce: number) => nonce + nonceOffset++)
 }
 
-export const dequantize = (number: number, decimals: number) => {
-  const factor = 10 ** decimals
-  return number / factor
+export function dequantize(number: string, decimals: number): number {
+  // const factor = 10 ** decimals
+  // return typeof number === 'number'
+  //   ? number / factor
+  //   : parseFloat(number) / factor
+  return ethers.utils.parseUnits(number, decimals)
 }
 
 export const get0X0to0X = (address: string) => {
@@ -133,7 +136,26 @@ export const getAllowance = async (
     provider,
   )
   const allowance = await contract.allowance(userAddress, starkContract)
-  return dequantize(Number(allowance), decimal)
+  console.log({ allowance: String(allowance) })
+  return ethers.utils.parseUnits(String(allowance), decimal)
+}
+
+export const toFixed = (x: number): string => {
+  if (Math.abs(x) < 1.0) {
+    let e = parseInt(x.toString().split('e-')[1])
+    if (e) {
+      x *= Math.pow(10, e - 1)
+      x = parseFloat('0.' + new Array(e).join('0') + x.toString().substring(2))
+    }
+  } else {
+    let e = parseInt(x.toString().split('+')[1])
+    if (e > 20) {
+      e -= 20
+      x /= Math.pow(10, e)
+      x += parseFloat(new Array(e + 1).join('0'))
+    }
+  }
+  return x.toString()
 }
 
 export const approveUnlimitedAllowanceUtil = async (
@@ -146,18 +168,17 @@ export const approveUnlimitedAllowanceUtil = async (
 
   const gasLimit = await contract.estimateGas.approve(
     contractAddress,
-    ethers.BigNumber.from(
-      '115792089237316195423570985008687907853269984665640564039457584007913129639935',
-    ),
+    ethers.BigNumber.from(MAX_INT_ALLOWANCE),
+  )
+  const approval = await contract.approve(
+    contractAddress,
+    ethers.BigNumber.from(MAX_INT_ALLOWANCE),
+    {
+      gasLimit,
+      gasPrice,
+    },
   )
 
-  console.log({ gasLimit, gasPrice })
-  const amount = ethers.BigNumber.from(MAX_INT_ALLOWANCE)
-
-  const approval = await contract.approve(contractAddress, amount, {
-    gasLimit,
-    gasPrice,
-  })
   return approval
 }
 
@@ -215,7 +236,7 @@ export const formatWithdrawalAmount = (
   if (symbol === 'eth') {
     return amount ? String(ethers.utils.formatEther(amount)) : '0'
   } else {
-    return String(dequantize(amount, decimals))
+    return String(dequantize(String(amount), decimals))
   }
 }
 

@@ -47,6 +47,7 @@ import {
   Network,
   NetworkStat,
   NetworkCoinStat,
+  CrossChainAvailableNetwork,
 } from './types'
 import { AxiosInstance } from './axiosInstance'
 import { signMsg } from './bin/blockchain_utils'
@@ -56,6 +57,7 @@ import {
   filterCrossChainCoin,
   signInternalTxMsgHash,
   signWithdrawalTxMsgHash,
+  toFixed,
 } from './utils'
 import { ec } from 'elliptic'
 import {
@@ -296,6 +298,39 @@ export class Client {
     return normalBalance
   }
 
+  async getEVMTokenBalance(
+    provider: ethers.providers.Provider,
+    ethAddress: string,
+    currency: string,
+    network: CrossChainAvailableNetwork,
+  ) {
+    if (this.getNativeCurrencyByNetwork(network) === currency) {
+      const res = await provider.getBalance(ethAddress)
+      return +ethers.utils.formatEther(res)
+    }
+    const network_config = await this.getNetworkConfig()
+    const currenctNetworkConfig = network_config[network.toUpperCase()]
+    // const allowedTokens = currenctNetworkConfig.tokens
+
+    const currentCoin = filterCrossChainCoin(
+      currenctNetworkConfig,
+      currency,
+      'TOKENS',
+    )
+
+    const { blockchain_decimal: decimal, token_contract: tokenContract } =
+      currentCoin
+    const contract = new ethers.Contract(
+      tokenContract,
+      CONFIG.ERC20_ABI,
+      provider,
+    )
+    const balance = (await contract.balanceOf(ethAddress)).toString()
+    const normalBalance = balance / Math.pow(10, +decimal)
+
+    return normalBalance
+  }
+
   async depositFromEthereumNetworkWithStarkKey(
     signer: Wallet,
     provider: ethers.providers.Provider,
@@ -415,6 +450,175 @@ export class Client {
     )
   }
 
+  getNativeCurrencyByNetwork(network: CrossChainAvailableNetwork): string {
+    let networkConfig = {
+      POLYGON: 'matic',
+      OPTIMISM: 'eth',
+      ARBITRUM: 'eth',
+      LINEA: 'eth',
+    }
+
+    return networkConfig[network]
+  }
+
+  async estimateContractFunctionGas(
+    contract: ethers.Contract,
+    functionName: string,
+    parameters: any[],
+  ): Promise<ethers.BigNumber | null> {
+    try {
+      // Estimate gas for the contract function call
+      const gasLimit = await contract.estimateGas[functionName](...parameters)
+      // console.log('Estimated Gas Limit:', gasLimit.toString())
+      return gasLimit
+    } catch (error) {
+      console.error('Error:', error)
+      return null
+    }
+  }
+
+  async crossChainDepositWithSigner(
+    signer: Wallet,
+    provider: ethers.providers.Provider,
+    currency: string,
+    amount: string,
+    network: CrossChainAvailableNetwork,
+  ) {
+    if (!(Number(amount) > 0)) {
+      throw new InvalidAmountError(
+        `Please enter a valid amount. It should be a numerical value greater than zero.`,
+      )
+    }
+    this.getAuthStatus()
+    const network_config = await this.getNetworkConfig()
+    const selectedNetworkConfig = network_config[network.toUpperCase()]
+    // const allowedTokens = selectedNetworkConfig.tokens
+    const contractAddress = selectedNetworkConfig.deposit_contract
+
+    const currentCoin = filterCrossChainCoin(
+      selectedNetworkConfig,
+      currency,
+      'DEPOSIT',
+    )
+
+    const { blockchain_decimal: decimal, token_contract: tokenContract } =
+      currentCoin
+
+    const quantizedAmount = ethers.utils.parseUnits(amount?.toString(), decimal)
+
+    const contract = new ethers.Contract(
+      contractAddress,
+      CONFIG.POLYGON_ABI.abi,
+      signer,
+    )
+
+    const parsedAmount = ethers.utils.parseEther(String(amount))
+
+    // const gwei = ethers.utils.formatUnits(parsedAmount, 'gwei')
+
+    const params = {
+      value: parsedAmount,
+      from: signer.address,
+    }
+
+    const balance = await this.getEVMTokenBalance(
+      provider,
+      signer.address,
+      currency,
+      network,
+    )
+
+    if (balance < +amount) {
+      throw new BalanceTooLowError(
+        `Current Balance (${balance}) for '${currency}' is too low, please add balance before deposit`,
+      )
+    }
+
+    let depositResponse
+
+    if (currency === this.getNativeCurrencyByNetwork(network)) {
+      depositResponse = await contract.depositNative(params)
+    } else {
+      const allowance = await getAllowance(
+        signer.address,
+        contractAddress,
+        tokenContract,
+        +decimal,
+        provider,
+      )
+
+      console.log({ allowance: allowance.toString(), amount })
+
+      if (allowance < +amount) {
+        throw new AllowanceTooLowError(
+          `Current Allowance (${allowance}) is too low, please use Client.approveUnlimitedAllowancePolygonNetwork()`,
+        )
+      }
+
+      depositResponse = await contract.deposit(tokenContract, quantizedAmount, {
+        from: signer.address,
+      })
+    }
+
+    const res = await this.crossChainDepositStart(
+      amount,
+      currency,
+      depositResponse['hash'],
+      depositResponse['nonce'],
+      network,
+    )
+
+    // Instead of getting the payload as "", we can send the solidity transaction_hash (response) that we received from the "depositEth | depositERC20". This way, it's easy to check the transaction.
+    res.payload = { transaction_hash: depositResponse.hash }
+
+    return res
+  }
+
+  async crossChainDeposit(
+    rpcURL: string,
+    ethPrivateKey: string,
+    currency: string,
+    amount: string,
+    network: CrossChainAvailableNetwork,
+  ) {
+    this.getAuthStatus()
+    const provider = new ethers.providers.JsonRpcProvider(rpcURL)
+    const signer = new Wallet(ethPrivateKey, provider)
+    return this.crossChainDepositWithSigner(
+      signer,
+      provider,
+      currency,
+      amount,
+      network,
+    )
+  }
+
+  async setCrossChainAllowance(
+    coin: string,
+    signer: Wallet,
+    network: CrossChainAvailableNetwork,
+  ) {
+    const network_config = await this.getNetworkConfig()
+    const currenctNetworkConfig = network_config[network.toUpperCase()]
+    // const allowedTokens = currenctNetworkConfig.tokens
+    const contractAddress = currenctNetworkConfig.deposit_contract
+
+    const currentCoin = filterCrossChainCoin(
+      currenctNetworkConfig,
+      coin,
+      'DEPOSIT',
+    )
+    const { token_contract: tokenContract } = currentCoin
+
+    const res = await approveUnlimitedAllowanceUtil(
+      contractAddress,
+      tokenContract,
+      signer,
+    )
+
+    return res
+  }
+
   async depositFromPolygonNetworkWithSigner(
     signer: Wallet,
     provider: ethers.providers.Provider,
@@ -498,6 +702,7 @@ export class Client {
       depositResponse['hash'],
       depositResponse['nonce'],
     )
+
     // Instead of getting the payload as "", we can send the solidity transaction_hash (response) that we received from the "depositEth | depositERC20". This way, it's easy to check the transaction.
     res.payload = { transaction_hash: depositResponse.hash }
 
@@ -685,9 +890,8 @@ export class Client {
     params?: ListDepositParams,
   ): Promise<Response<Pagination<Deposit>>> {
     this.getAuthStatus()
-    const res = await this.axiosInstance.post<Response<Pagination<Deposit>>>(
-      `/sapi/v1/deposits`,
-      {},
+    const res = await this.axiosInstance.get<Response<Pagination<Deposit>>>(
+      `/sapi/v1/deposits/all`,
       { params: params },
     )
     return res.data
@@ -738,6 +942,7 @@ export class Client {
     currency: string,
     depositBlockchainHash: string,
     depositBlockchainNonce: string,
+    network?: CrossChainAvailableNetwork,
   ) {
     const amountTostring = amount.toString()
     const res = await this.axiosInstance.post(
@@ -745,7 +950,7 @@ export class Client {
       {
         amount: amountTostring,
         currency,
-        network: 'POLYGON',
+        network: network ? network : 'POLYGON',
         deposit_blockchain_hash: depositBlockchainHash,
         deposit_blockchain_nonce: depositBlockchainNonce,
       },

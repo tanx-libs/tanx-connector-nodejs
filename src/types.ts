@@ -4,6 +4,11 @@ export type Side = 'buy' | 'sell'
 export type OrdType = 'market' | 'limit'
 export type State = 'pending' | 'wait' | 'done' | 'cancel'
 export type Network = 'mainnet' | 'testnet'
+export type CrossChainAvailableNetwork =
+  | 'POLYGON'
+  | 'OPTIMISM'
+  | 'ARBITRUM'
+  | 'LINEA'
 
 export interface Response<T> {
   status: string
