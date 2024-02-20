@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.2.1
+
+### Patch Changes
+
+- refactor: remove unused config
+
 ## 1.2.0
 
 ### Minor Changes
