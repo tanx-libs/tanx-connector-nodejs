@@ -27,7 +27,7 @@ export const CONFIG = {
   ALLOWED_CHAIN_ID_GOERLI: '0x5',
   STARK_CONTRACT: {
     mainnet: '0x1390f521A79BaBE99b69B37154D63D431da27A07',
-    testnet: '0x87eB0b1B5958c7fD034966925Ea026ad8Bf3d6dD',
+    testnet: '0xA2eC709125Ea693f5522aEfBBC3cb22fb9146B52',
   },
   STARK_ABI: {
     mainnet: starkex_abi_main,
