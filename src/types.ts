@@ -9,6 +9,8 @@ export type CrossChainAvailableNetwork =
   | 'OPTIMISM'
   | 'ARBITRUM'
   | 'LINEA'
+  | 'SCROLL'
+  | 'MODE'
 
 export interface Response<T> {
   status: string
@@ -221,12 +223,12 @@ export interface ListOrdersParams {
 export interface ListDepositParams {
   limit?: number
   page?: number
-  network?: string
+  network?: CrossChainAvailableNetwork | 'ETHEREUM'
 }
 
 export interface ListWithdrawalParams {
   page?: number
-  network?: string
+  network?: CrossChainAvailableNetwork | 'ETHEREUM'
 }
 
 export interface TradeParams {

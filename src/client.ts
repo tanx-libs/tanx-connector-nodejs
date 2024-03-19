@@ -402,7 +402,7 @@ export class Client {
       )
       if (allowance < +amount) {
         throw new AllowanceTooLowError(
-          `Current Allowance (${allowance}) is too low, please use Client.approveUnlimitedAllowanceEthereumNetwork()`,
+          `Current Allowance (${allowance}) is too low, please use Client.setAllowance()`,
         )
       }
 
@@ -456,25 +456,11 @@ export class Client {
       OPTIMISM: 'eth',
       ARBITRUM: 'eth',
       LINEA: 'eth',
+      SCROLL: 'eth',
+      MODE: 'eth',
     }
 
     return networkConfig[network]
-  }
-
-  async estimateContractFunctionGas(
-    contract: ethers.Contract,
-    functionName: string,
-    parameters: any[],
-  ): Promise<ethers.BigNumber | null> {
-    try {
-      // Estimate gas for the contract function call
-      const gasLimit = await contract.estimateGas[functionName](...parameters)
-      // console.log('Estimated Gas Limit:', gasLimit.toString())
-      return gasLimit
-    } catch (error) {
-      console.error('Error:', error)
-      return null
-    }
   }
 
   async crossChainDepositWithSigner(
@@ -483,6 +469,7 @@ export class Client {
     currency: string,
     amount: string,
     network: CrossChainAvailableNetwork,
+    gasOptions?: ethers.Overrides,
   ) {
     if (!(Number(amount) > 0)) {
       throw new InvalidAmountError(
@@ -519,6 +506,7 @@ export class Client {
     const params = {
       value: parsedAmount,
       from: signer.address,
+      gasOptions,
     }
 
     const balance = await this.getEVMTokenBalance(
@@ -557,6 +545,7 @@ export class Client {
 
       depositResponse = await contract.deposit(tokenContract, quantizedAmount, {
         from: signer.address,
+        ...gasOptions,
       })
     }
 
@@ -580,6 +569,7 @@ export class Client {
     currency: string,
     amount: string,
     network: CrossChainAvailableNetwork,
+    gasOptions?: ethers.Overrides,
   ) {
     this.getAuthStatus()
     const provider = new ethers.providers.JsonRpcProvider(rpcURL)
@@ -590,14 +580,19 @@ export class Client {
       currency,
       amount,
       network,
+      gasOptions,
     )
   }
 
-  async setCrossChainAllowance(
+  async setAllowance(
     coin: string,
     signer: Wallet,
-    network: CrossChainAvailableNetwork,
+    network: CrossChainAvailableNetwork | 'ETHEREUM',
+    gasOptions?: ethers.Overrides,
   ) {
+    if (network === 'ETHEREUM') {
+      return await this.approveUnlimitedAllowanceEthereumNetwork(coin, signer)
+    }
     const network_config = await this.getNetworkConfig()
     const currenctNetworkConfig = network_config[network.toUpperCase()]
     // const allowedTokens = currenctNetworkConfig.tokens
@@ -614,6 +609,7 @@ export class Client {
       contractAddress,
       tokenContract,
       signer,
+      gasOptions,
     )
 
     return res
@@ -798,7 +794,7 @@ export class Client {
     keyPair: ec.KeyPair,
     amount: number | string,
     coinSymbol: string,
-    network: string,
+    network: CrossChainAvailableNetwork | 'ETHEREUM',
   ): Promise<Response<ProcessFastWithdrawalResponse>> {
     if (!(Number(amount) > 0)) {
       throw new InvalidAmountError(
@@ -806,10 +802,10 @@ export class Client {
       )
     }
     this.getAuthStatus()
-    if (network === 'POLYGON') {
+    if (network !== 'ETHEREUM') {
       const network_config = await this.getNetworkConfig()
-      const polygonConfig = network_config['POLYGON']
-      const _ = filterCrossChainCoin(polygonConfig, coinSymbol, 'WITHDRAWAL')
+      const coinConfig = network_config[network]
+      const _ = filterCrossChainCoin(coinConfig, coinSymbol, 'WITHDRAWAL')
     } else {
       const { payload: coinStats } = await this.getCoinStatus()
       const _ = filterEthereumCoin(coinStats, coinSymbol)

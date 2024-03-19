@@ -162,6 +162,7 @@ export const approveUnlimitedAllowanceUtil = async (
   contractAddress: string,
   tokenContract: string,
   signer: ethers.Signer,
+  gasOptions?: ethers.Overrides,
 ) => {
   const gasPrice = signer.getGasPrice()
   const contract = new ethers.Contract(tokenContract, CONFIG.ERC20_ABI, signer)
@@ -174,8 +175,8 @@ export const approveUnlimitedAllowanceUtil = async (
     contractAddress,
     ethers.BigNumber.from(MAX_INT_ALLOWANCE),
     {
-      gasLimit,
-      gasPrice,
+      gasLimit: gasOptions?.gasLimit ? gasOptions?.gasLimit : gasLimit,
+      gasPrice: gasOptions?.gasPrice ? gasOptions?.gasPrice : gasPrice,
     },
   )
 
@@ -224,7 +225,6 @@ export const filterCrossChainCoin = (
   }
 
   const currentCoin = allowedTokens[coin]
-
   return currentCoin
 }
 
