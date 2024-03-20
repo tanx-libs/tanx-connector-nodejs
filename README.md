@@ -585,7 +585,7 @@ With Normal Withdrawal, your requested funds will be processed within a standard
 // 1. Initiate your withdrawal request by calling the "initiateNormalWithdrawal" function.
 const withdrawalRes = await client.initiateNormalWithdrawal(
   keyPair, // The keyPair created above
-  0.0001, // Enter the amount you want to deposit
+  0.0001, // Enter the amount you want to withdraw
   'usdc', // Enter the coin symbol
 )
 // 2. WAIT for up to 24 hours.
