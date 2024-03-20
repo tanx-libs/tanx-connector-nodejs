@@ -431,6 +431,34 @@ const checkUserRes = await client.checkInternalTransferUserExists(
 )
 ```
 
+### Setting Allowance
+
+Granting permission for token spending enables transactions on Ethereum and other chains.
+
+> Supported EVM cross-chain networks: 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', 'MODE'.
+
+```js
+// Note: Please use ethers version 5.5.3.
+import { Wallet, ethers } from 'ethers'
+
+const provider = new ethers.providers.JsonRpcProvider(
+  process.env.RPC_PROVIDER, // Replace your RPC URL based on your destination network.
+)
+
+const signer = new Wallet(privateKey, provider)
+
+const res = await client.setAllowance(
+  'usdc', // Enter the coin symbol.
+  signer,
+  'SCROLL', // Enter the network for which you want to grant allowance.
+  // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden while executing the transaction.
+  // {
+  //   gasLimit: '',
+  //   gasPrice: '',
+  // },
+)
+```
+
 ### Deposit
 
 #### Ethereum Deposit
@@ -446,7 +474,7 @@ In this method, you will use an ETH private key and an RPC URL to execute a depo
 
 ```javascript
   const res = await client.depositFromEthereumNetwork(
-    process.env.RPC_PROVIDER as string, // Use 'goerli' for the testnet and 'ethereum mainnet' for the mainnet.
+    process.env.RPC_PROVIDER as string, // Replace your RPC URL based on your destination network.
     privateKey, // Your ETH private key.
     'testnet', // Network allowed values are 'testnet' or 'mainnet'.
     'eth', // Enter the coin symbol.
@@ -463,7 +491,7 @@ This method involves using a custom provider and signer, which can be created us
 import { Wallet, ethers } from 'ethers'
 
 const provider = new ethers.providers.JsonRpcProvider(
-  process.env.RPC_PROVIDER, // Use 'goerli' for testnet and 'ethereum mainnet' for the mainnet.
+  process.env.RPC_PROVIDER, // Replace your RPC URL based on your destination network.
 )
 
 const signer = new Wallet(privateKey, provider)
@@ -477,20 +505,28 @@ const depositRes = await client.depositFromEthereumNetworkWithStarkKey(
 )
 ```
 
-#### Polygon Deposit
+#### Cross-Chain Deposit
 
-There are two ways to make a deposit on the Polygon network:
+There are two ways to make a deposit on the Cross-chain:
+
+> Supported EVM cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
 
 #### 1. Using ETH Private Key and RPC URL:
 
-In this method, you will use an ETH private key and an RPC URL to execute a Polygon deposit. You'll also need to create an RPC URL using services like Infura, Alchemy, etc. Here's the code snippet for this method:
+In this method, you will use an ETH private key and an RPC URL to execute a Cross-Chain deposit. You'll also need to create an RPC URL using services like Infura, Alchemy, etc. Here's the code snippet for this method:
 
 ```javascript
-  const depositRes = await client.depositFromPolygonNetwork(
-    process.env.RPC_PROVIDER as string, // Use 'Polygon Mumbai' for the testnet and 'Polygon mainnet' for the mainnet.
+  const depositRes = await client.crossChainDeposit(
+    process.env.RPC_PROVIDER as string, // Replace your RPC URL based on your destination network.
     privateKey, // Your ETH private key.
-    'btc', // Enter the coin symbol.
-    0.00001, // Enter the amount you want to deposit.
+    'usdt', // Enter the coin symbol.
+    1, // Enter the amount you want to deposit.
+    'SCROLL' // Enter the network you want to deposit into.
+    // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden while executing the transaction.
+    {
+      gasLimit: '',
+      gasPrice: '',
+    },
   );
 ```
 
@@ -503,7 +539,7 @@ This method involves using a custom provider and signer, which can be created us
 import { Wallet, ethers } from 'ethers'
 
 const provider = new ethers.providers.JsonRpcProvider(
-  process.env.RPC_PROVIDER, // Use 'Polygon Mumbai' for the testnet and 'Polygon mainnet' for the mainnet.
+  process.env.RPC_PROVIDER, // Replace your RPC URL based on your destination network.
 )
 
 const signer = new Wallet(privateKey, provider)
@@ -511,8 +547,14 @@ const signer = new Wallet(privateKey, provider)
 const depositPolygonRes = await client.depositFromPolygonNetworkWithSigner(
   signer, // The signer created above.
   provider, // The provider created above.
-  'btc', // Enter the coin symbol.
+  'usdc', // Enter the coin symbol.
   0.00001, // Enter the amount you want to deposit.
+  'SCROLL' // Enter the network you want to deposit into.
+  // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden while executing the transaction.
+  {
+    gasLimit: '',
+    gasPrice: '',
+  },
 )
 ```
 
@@ -522,7 +564,7 @@ To get the deposit history, you can use the following code:
 
 ```javascript
 const depositsList = await client.listDeposits({
-  network: 'ETHEREUM', // Network for which you want to list the deposit history. Allowed networks are ETHEREUM & POLYGON
+  network: 'ETHEREUM', // Specify the network for which you want to list the deposit history. Allowed networks include 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', and 'MODE'.
   page: 2, // This is an optional field
   limit: 1, // This is an optional field
 })
@@ -543,7 +585,7 @@ With Normal Withdrawal, your requested funds will be processed within a standard
 // 1. Initiate your withdrawal request by calling the "initiateNormalWithdrawal" function.
 const withdrawalRes = await client.initiateNormalWithdrawal(
   keyPair, // The keyPair created above
-  0.0001, // Enter the amount you want to deposit
+  0.0001, // Enter the amount you want to withdraw
   'usdc', // Enter the coin symbol
 )
 // 2. WAIT for up to 24 hours.
@@ -575,7 +617,7 @@ const fastWithdrawalRes = await client.fastWithdrawal(
   keyPair, // The keyPair created above
   0.0001, // Enter the amount you want to deposit
   'usdc', // Enter the coin symbol
-  'ETHEREUM', // Allowed networks are POLYGON & ETHEREUM
+  'ETHEREUM', // Allowed networks include 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', and 'MODE'
 )
 
 //Get a list of fast withdrawals
@@ -584,15 +626,17 @@ const fastwithdrawalsList = await client.listFastWithdrawals({
 })
 ```
 
-#### Polygon withdrawal
+#### Cross-chain withdrawal
 
-On the Polygon network, we only support fast withdrawals.
+> Supported EVM cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
+
+On the cross-chain withdrawal network, we only support fast withdrawals.
 
 ```javascript
 const fastWithdrawalRes = await client.fastWithdrawal(
   keyPair, // The keyPair created above
   0.0001, // Enter the amount you want to deposit
   'usdc', // Enter the coin symbol
-  'POLYGON', // Allowed networks are POLYGON & ETHEREUM
+  'POLYGON', // Enter the network you want to withdraw from.
 )
 ```

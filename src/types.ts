@@ -4,6 +4,13 @@ export type Side = 'buy' | 'sell'
 export type OrdType = 'market' | 'limit'
 export type State = 'pending' | 'wait' | 'done' | 'cancel'
 export type Network = 'mainnet' | 'testnet'
+export type CrossChainAvailableNetwork =
+  | 'POLYGON'
+  | 'OPTIMISM'
+  | 'ARBITRUM'
+  | 'LINEA'
+  | 'SCROLL'
+  | 'MODE'
 
 export interface Response<T> {
   status: string
@@ -216,12 +223,12 @@ export interface ListOrdersParams {
 export interface ListDepositParams {
   limit?: number
   page?: number
-  network?: string
+  network?: CrossChainAvailableNetwork | 'ETHEREUM'
 }
 
 export interface ListWithdrawalParams {
   page?: number
-  network?: string
+  network?: CrossChainAvailableNetwork | 'ETHEREUM'
 }
 
 export interface TradeParams {

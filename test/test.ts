@@ -566,7 +566,7 @@ describe('Brine Connector', () => {
 
       it('List Deposit - 200', async () => {
         mock1
-          .onPost('/sapi/v1/deposits')
+          .onGet('/sapi/v1/deposits/all')
           .reply(200, responses.listDepositsResponse)
         const res = await client.listDeposits({ network: 'ETHEREUM' })
         expect(res).to.have.property('status')
@@ -574,8 +574,8 @@ describe('Brine Connector', () => {
         expect(res).to.have.property('payload')
       })
     })
-    describe('Polygon Deposits', () => {
-      it('Start Polygon Deposit - 200', async () => {
+    describe('Cross-Chain Deposits', () => {
+      it('Start Cross-Chain Deposit - 200', async () => {
         mock1
           .onPost('/sapi/v1/deposits/crosschain/create/')
           .reply(200, responses.depositFromPolygonNetworkStartResponse)
@@ -590,7 +590,7 @@ describe('Brine Connector', () => {
         expect(res).to.have.property('payload')
       })
 
-      it('Start Polygon Deposit - 400', async () => {
+      it('Start Cross-Chain Deposit - 400', async () => {
         mock1
           .onPost('/sapi/v1/deposits/crosschain/create/')
           .reply(400, responses.depositFromPolygonNetworkStartMissingParameters)
@@ -612,9 +612,9 @@ describe('Brine Connector', () => {
         }
       })
 
-      it('List Polygon Deposit - 200', async () => {
+      it('List Deposit - 200', async () => {
         mock1
-          .onPost('/sapi/v1/deposits')
+          .onGet('/sapi/v1/deposits/all')
           .reply(200, responses.listPolygonDeposits)
         const res = await client.listDeposits({ network: 'POLYGON' })
         expect(res).to.have.property('status')

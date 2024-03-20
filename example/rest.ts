@@ -18,8 +18,8 @@ const main = async () => {
   // load your privateKey and walletAddress
   const privateKey = process.env.PRIVATE_KEY
   const ethAddress = process.env.ETH_ADDRESS
-  // const brineOrganizationKey = process.env.BRINE_ORGANIZATION_KEY
-  // const brineApiKey = process.env.BRINE_API_KEY
+  // const tanxOrganizationKey = process.env.TANX_ORGANIZATION_KEY
+  // const tanxApiKey = process.env.TANX_API_KEY
 
   if (privateKey && ethAddress) {
     // handle in try catch block
@@ -93,45 +93,93 @@ const main = async () => {
     }
   }
 }
-
 // main()
 
-const ethereumDepositAndWithdrawal = async () => {
-  // load your privateKey and walletAddress
+const approveAllowance = async () => {
+  // Load your privateKey and walletAddress
   const privateKey = process.env.PRIVATE_KEY
   const ethAddress = process.env.ETH_ADDRESS
-  // const brineOrganizationKey = process.env.BRINE_ORGANIZATION_KEY
-  // const brineApiKey = process.env.BRINE_API_KEY
+  // const tanxOrganizationKey = process.env.TANX_ORGANIZATION_KEY;
+  // const tanxApiKey = process.env.TANX_API_KEY;
 
   if (privateKey && ethAddress) {
-    // handle in try catch block
+    // Handle in try-catch block
     try {
-      // create a rest client instance (you can pass option)
+      // Create a rest client instance (you can pass options)
+      const client = new Client('testnet')
+
+      // Login to use private endpoints
+      const loginRes = await client.completeLogin(ethAddress, privateKey)
+      console.log(loginRes.payload)
+
+      const userSignature = createUserSignature(privateKey, 'testnet') // or sign it yourself
+      const keyPair = getKeyPairFromSignature(userSignature.signature)
+
+      const provider = new ethers.providers.JsonRpcProvider(
+        process.env.RPC_PROVIDER,
+      )
+      const signer = new Wallet(privateKey, provider)
+      // Supported cross-chain networks - 'ETHEREUM' | 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
+      const res = await client.setAllowance(
+        'usdt',
+        signer,
+        'POLYGON',
+        // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden.
+        // {
+        //   gasLimit: '',
+        //   gasPrice: '',
+        // },
+      )
+
+      console.log({ res }, 'allowance')
+    } catch (e) {
+      // Error: AuthenticationError | AxiosError
+      if (isAuthenticationError(e)) {
+        console.log(e)
+      } else {
+        console.log(e)
+      }
+    }
+  }
+}
+// approveAllowance()
+
+const ethereumDepositAndWithdrawal = async () => {
+  // Load your privateKey and walletAddress
+  const privateKey = process.env.PRIVATE_KEY
+  const ethAddress = process.env.ETH_ADDRESS
+  // const tanxOrganizationKey = process.env.TANX_ORGANIZATION_KEY;
+  // const tanxApiKey = process.env.TANX_API_KEY;
+
+  if (privateKey && ethAddress) {
+    // Handle in try-catch block
+    try {
+      // Create a rest client instance (you can pass options)
       const client = new Client()
 
-      // login to use private endpoints
+      // Login to use private endpoints
       const loginRes = await client.completeLogin(ethAddress, privateKey)
       console.log(loginRes.payload)
 
       const userSignature = createUserSignature(privateKey, 'testnet') // or sign it yourself
       const keyPair = getKeyPairFromSignature(userSignature.signature)
       const stark_public_key = keyPair.getPublic().getX().toString('hex')
-      // const stark_private_key = keyPair.getPrivate().toString('hex')
+      // const stark_private_key = keyPair.getPrivate().toString('hex');
       const provider = new ethers.providers.JsonRpcProvider(
         process.env.RPC_PROVIDER,
       )
       const signer = new Wallet(privateKey, provider)
 
-      //  deposit with eth private key
+      // Deposit with ETH private key
       // const depositRes = await client.depositFromEthereumNetwork(
       //   process.env.RPC_PROVIDER as string,
       //   privateKey,
       //   'mainnet',
       //   'eth',
       //   0.00001,
-      // )
-      //  or
-      //  deposit with L2 Key
+      // );
+      // or
+      // Deposit with L2 Key
       // const depositStarkKeyRes =
       //   await client.depositFromEthereumNetworkWithStarkKey(
       //     signer,
@@ -139,7 +187,8 @@ const ethereumDepositAndWithdrawal = async () => {
       //     `0x${stark_public_key}`,
       //     0.0001,
       //     'eth',
-      //   )
+      //   );
+
       // Withdrawals
       // Normal withdrawal
       // 1. Initiate your withdrawal request by calling "initiateNormalWithdrawal".
@@ -166,34 +215,32 @@ const ethereumDepositAndWithdrawal = async () => {
       // Fast withdrawal
       const fastWithdrawalRes = await client.fastWithdrawal(
         keyPair,
-        10,
+        2,
         'usdc',
         'ETHEREUM',
       )
 
-      //Get a list of deposit
-      const depositsList = await client.listDeposits({
+      // Get a list of deposits
+      const depositList = await client.listDeposits({
         page: 2,
         limit: 1,
         network: 'ETHEREUM',
       })
 
-      //Get a list of withdrawals
+      // Get a list of withdrawals
       const withdrawalsList = await client.listNormalWithdrawals()
 
-      //Get a list of fast withdrawals
-      const fastwithdrawalsList = await client.listFastWithdrawals()
+      // Get a list of fast withdrawals
+      const fastWithdrawalsList = await client.listFastWithdrawals()
 
       console.log({
-        // depositRes,
-        // depositStarkKeyRes,
         withdrawalRes,
         pendingBalance,
         completeNWRes,
-        // fastWithdrawalRes,
-        depositsList,
+        fastWithdrawalRes,
+        depositList,
         withdrawalsList,
-        fastwithdrawalsList,
+        fastWithdrawalsList,
       })
     } catch (e) {
       // Error: AuthenticationError | AxiosError
@@ -206,21 +253,24 @@ const ethereumDepositAndWithdrawal = async () => {
     }
   }
 }
+// ethereumDepositAndWithdrawal()
 
-const polygonDepositAndWithdrawal = async () => {
-  // load your privateKey and walletAddress
+const crossDepositAndWithdrawal = async () => {
+  // Supported cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
+
+  // Load your privateKey and walletAddress
   const privateKey = process.env.PRIVATE_KEY
   const ethAddress = process.env.ETH_ADDRESS
-  // const brineOrganizationKey = process.env.BRINE_ORGANIZATION_KEY
-  // const brineApiKey = process.env.BRINE_API_KEY
+  // const tanxOrganizationKey = process.env.TANX_ORGANIZATION_KEY;
+  // const tanxApiKey = process.env.TANX_API_KEY;
 
   if (privateKey && ethAddress) {
-    // handle in try catch block
+    // Handle in try-catch block
     try {
-      // create a rest client instance (you can pass option)
+      // Create a rest client instance (you can pass options)
       const client = new Client('testnet')
 
-      // login to use private endpoints
+      // Login to use private endpoints
       const loginRes = await client.completeLogin(ethAddress, privateKey)
       console.log(loginRes.payload)
 
@@ -232,44 +282,54 @@ const polygonDepositAndWithdrawal = async () => {
       )
       const signer = new Wallet(privateKey, provider)
 
-      // deposit with eth private key
-      const deposit = await client.depositFromPolygonNetwork(
-        process.env.RPC_PROVIDER as string,
-        privateKey,
-        'btc',
-        '0.00001',
-      )
+      // Deposit with ETH private key
+      // const deposit = await client.crossChainDeposit(
+      //   process.env.RPC_PROVIDER as string,
+      //   privateKey,
+      //   'btc',
+      //   '0.0001',
+      //   'POLYGON',
+      //   // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden.
+      //   // {
+      //   //   gasLimit: '',
+      //   //   gasPrice: '',
+      //   // },
+      // )
 
-      // const depositWithSigner =
-      //   await client.depositFromPolygonNetworkWithSigner(
-      //     signer,
-      //     provider,
-      //     'matic',
-      //     0.0001,
-      //   )
+      // Deposit with signer
+      // const deposit = await client.crossChainDepositWithSigner(
+      //   signer,
+      //   provider,
+      //   'usdc',
+      //   '1',
+      //   'SCROLL',
+      // )
 
-      const depositsList = await client.listDeposits({
-        page: 2,
-        limit: 1,
-        network: 'POLYGON',
+      // Get a list of deposits
+      const depositList = await client.listDeposits({
+        page: 1, // This is an optional field
+        limit: 1, // This is an optional field
+        network: 'MODE', // This is an optional field
       })
 
-      // // Fast withdrawal
+      // Fast withdrawal
       const fastWithdrawalRes = await client.fastWithdrawal(
         keyPair,
-        0.001,
+        0.0054,
         'btc',
         'POLYGON',
       )
 
+      // Get a list of fast withdrawals
       // const fastwithdrawalsList = await client.listFastWithdrawals({
-      //   page: 2, // This is an optional field
-      //   network: 'POLYGON',
+      //   page: 1, // This is an optional field
+      //   network: 'MODE', // This is an optional field
       // })
 
       console.log({
-        depositFromPolygon: deposit,
-        depositsList,
+        // crossDeposit: deposit,
+        depositList,
+        // fastwithdrawalsList,
         fastWithdrawalRes,
       })
     } catch (e) {
@@ -282,16 +342,14 @@ const polygonDepositAndWithdrawal = async () => {
     }
   }
 }
-
-// polygonDepositAndWithdrawal()
-// ethereumDepositAndWithdrawal()
+crossDepositAndWithdrawal()
 
 const internalTransfers = async () => {
   // load your privateKey and walletAddress
   const privateKey = process.env.PRIVATE_KEY
   const ethAddress = process.env.ETH_ADDRESS
-  const brineOrganizationKey = process.env.BRINE_ORGANIZATION_KEY
-  const brineApiKey = process.env.BRINE_API_KEY
+  const tanxOrganizationKey = process.env.TANX_ORGANIZATION_KEY
+  const tanxApiKey = process.env.TANX_API_KEY
 
   if (privateKey && ethAddress) {
     // handle in try catch block
@@ -309,8 +367,8 @@ const internalTransfers = async () => {
       const internalTransferResponse =
         await client.initiateAndProcessInternalTransfers(
           keypair,
-          brineOrganizationKey as string,
-          brineApiKey as string,
+          tanxOrganizationKey as string,
+          tanxApiKey as string,
           'usdc',
           1,
           '0xF5F467c3D86760A4Ff6262880727E854428a4996',
@@ -333,8 +391,8 @@ const internalTransfers = async () => {
       }
       // Check if a user exists by their destination address.
       const checkUserRes = await client.checkInternalTransferUserExists(
-        brineOrganizationKey as string,
-        brineApiKey as string,
+        tanxOrganizationKey as string,
+        tanxApiKey as string,
         '0x6c875514E42F14B891399A6a8438E6AA8F77B178',
       )
     } catch (e) {
@@ -348,7 +406,6 @@ const internalTransfers = async () => {
     }
   }
 }
-
 // internalTransfers()
 
 const getL2Keys = async (ethPrivateKey: string) => {
@@ -360,5 +417,4 @@ const getL2Keys = async (ethPrivateKey: string) => {
   console.log(`stark public_key ${stark_public_key}`)
   console.log(`stark private_key ${stark_private_key}`)
 }
-
 // getL2Keys("<enter your eth private key>")

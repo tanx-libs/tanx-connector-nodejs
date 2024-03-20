@@ -104,9 +104,12 @@ export const getNonce = (
   return baseNonce.then((nonce: number) => nonce + nonceOffset++)
 }
 
-export const dequantize = (number: number, decimals: number) => {
-  const factor = 10 ** decimals
-  return number / factor
+export function dequantize(number: string, decimals: number): BigNumber {
+  // const factor = 10 ** decimals
+  // return typeof number === 'number'
+  //   ? number / factor
+  //   : parseFloat(number) / factor
+  return ethers.utils.parseUnits(number, decimals)
 }
 
 export const get0X0to0X = (address: string) => {
@@ -126,38 +129,57 @@ export const getAllowance = async (
   tokenContract: string,
   decimal: number,
   provider: ethers.providers.Provider,
-) => {
+): Promise<BigNumber> => {
   const contract = new ethers.Contract(
     tokenContract,
     CONFIG.ERC20_ABI,
     provider,
   )
   const allowance = await contract.allowance(userAddress, starkContract)
-  return dequantize(Number(allowance), decimal)
+  return ethers.utils.parseUnits(String(allowance), decimal)
+}
+
+export const toFixed = (x: number): string => {
+  if (Math.abs(x) < 1.0) {
+    const e = parseInt(x.toString().split('e-')[1])
+    if (e) {
+      x *= Math.pow(10, e - 1)
+      x = parseFloat('0.' + new Array(e).join('0') + x.toString().substring(2))
+    }
+  } else {
+    let e = parseInt(x.toString().split('+')[1])
+    if (e > 20) {
+      e -= 20
+      x /= Math.pow(10, e)
+      x += parseFloat(new Array(e + 1).join('0'))
+    }
+  }
+  return x.toString()
 }
 
 export const approveUnlimitedAllowanceUtil = async (
   contractAddress: string,
   tokenContract: string,
   signer: ethers.Signer,
+  gasOptions?: ethers.Overrides,
 ) => {
-  const gasPrice = signer.getGasPrice()
+  const gasPrice = await signer.getGasPrice()
   const contract = new ethers.Contract(tokenContract, CONFIG.ERC20_ABI, signer)
 
   const gasLimit = await contract.estimateGas.approve(
     contractAddress,
-    ethers.BigNumber.from(
-      '115792089237316195423570985008687907853269984665640564039457584007913129639935',
-    ),
+    ethers.BigNumber.from(MAX_INT_ALLOWANCE),
   )
 
-  console.log({ gasLimit, gasPrice })
-  const amount = ethers.BigNumber.from(MAX_INT_ALLOWANCE)
+  const approval = await contract.approve(
+    contractAddress,
+    ethers.BigNumber.from(MAX_INT_ALLOWANCE),
+    {
+      gasLimit: gasOptions?.gasLimit ? gasOptions?.gasLimit : gasLimit,
+      gasPrice: gasOptions?.gasPrice ? gasOptions?.gasPrice : gasPrice,
+    },
+  )
 
-  const approval = await contract.approve(contractAddress, amount, {
-    gasLimit,
-    gasPrice,
-  })
   return approval
 }
 
@@ -172,14 +194,48 @@ export const filterEthereumCoin = (
       }
     })
     .filter((c) => c !== undefined)[0]
-  if (!currentCoin) throw new CoinNotFoundError(`Coin '${coin}' not found`)
+
+  const supportedCoinList = Object.keys(coinStatsPayload).map((coinName) => {
+    return coinStatsPayload[coinName].symbol
+  })
+
+  if (!currentCoin) {
+    throw new CoinNotFoundError(
+      `Coin '${coin.toUpperCase()}' not supported on the ETHEREUM network. Supported coins include ${supportedCoinList
+        .join(', ')
+        ?.toUpperCase()}.`,
+    )
+  }
   return currentCoin
+}
+
+function generateErrorMessage(
+  coin: string,
+  network: string,
+  supportedCoins: string[],
+): string {
+  // coin = coin.toUpperCase()
+  network = network.toUpperCase()
+
+  // const supportedCoinList = supportedCoins.join(', ')
+  const lastIndex = supportedCoins.length - 1
+  const lastCoin = supportedCoins[lastIndex]
+  let supportedCoinsText = supportedCoins.slice(0, lastIndex).join(', ')
+
+  if (lastIndex > 0) {
+    supportedCoinsText += ` and ${lastCoin}`
+  } else {
+    supportedCoinsText += lastCoin
+  }
+
+  return `The coin '${coin}' is not supported on the ${network} network. Supported coins include ${supportedCoinsText}.`
 }
 
 export const filterCrossChainCoin = (
   config: NetworkCoinStat,
   coin: string,
   type: string,
+  network?: string,
 ) => {
   const allowedTokens = config.tokens
   const allowedTokensForDeposit = config.allowed_tokens_for_deposit
@@ -192,18 +248,29 @@ export const filterCrossChainCoin = (
     const allowedToken = allowedTokensForFastWithdrawal?.find(
       (token) => token === coin,
     )
-    if (!allowedToken) throw new CoinNotFoundError(`Coin '${coin}' not found`)
+    if (!allowedToken) {
+      throw new CoinNotFoundError(
+        network
+          ? generateErrorMessage(coin, network, allowedTokensForFastWithdrawal)
+          : `Coin '${coin.toUpperCase()}' not found`,
+      )
+    }
   } else if (type === 'DEPOSIT') {
     const allowedToken = allowedTokensForDeposit?.find(
       (token) => token === coin,
     )
-    if (!allowedToken) throw new CoinNotFoundError(`Coin '${coin}' not found`)
+    if (!allowedToken) {
+      throw new CoinNotFoundError(
+        network
+          ? generateErrorMessage(coin, network, allowedTokensForDeposit)
+          : `Coin '${coin.toUpperCase()}' not found`,
+      )
+    }
   } else {
     throw new CoinNotFoundError(`Type not found`)
   }
 
   const currentCoin = allowedTokens[coin]
-
   return currentCoin
 }
 
@@ -215,7 +282,7 @@ export const formatWithdrawalAmount = (
   if (symbol === 'eth') {
     return amount ? String(ethers.utils.formatEther(amount)) : '0'
   } else {
-    return String(dequantize(amount, decimals))
+    return String(dequantize(String(amount), decimals))
   }
 }
 
