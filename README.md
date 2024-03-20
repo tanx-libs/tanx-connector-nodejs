@@ -442,7 +442,7 @@ Granting permission for token spending enables transactions on Ethereum and othe
 import { Wallet, ethers } from 'ethers'
 
 const provider = new ethers.providers.JsonRpcProvider(
-  process.env.RPC_PROVIDER, // Use 'Polygon Mumbai' for the testnet and 'Polygon mainnet' for the mainnet.
+  process.env.RPC_PROVIDER, // Replace your RPC URL based on your destination network.
 )
 
 const signer = new Wallet(privateKey, provider)
@@ -451,7 +451,7 @@ const res = await client.setAllowance(
   'usdc', // Enter the coin symbol.
   signer,
   'SCROLL', // Enter the network for which you want to grant allowance.
-  // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden while executing the transaction..
+  // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden while executing the transaction.
   // {
   //   gasLimit: '',
   //   gasPrice: '',
@@ -474,7 +474,7 @@ In this method, you will use an ETH private key and an RPC URL to execute a depo
 
 ```javascript
   const res = await client.depositFromEthereumNetwork(
-    process.env.RPC_PROVIDER as string, // Use 'goerli' for the testnet and 'ethereum mainnet' for the mainnet.
+    process.env.RPC_PROVIDER as string, // Replace your RPC URL based on your destination network.
     privateKey, // Your ETH private key.
     'testnet', // Network allowed values are 'testnet' or 'mainnet'.
     'eth', // Enter the coin symbol.
@@ -491,7 +491,7 @@ This method involves using a custom provider and signer, which can be created us
 import { Wallet, ethers } from 'ethers'
 
 const provider = new ethers.providers.JsonRpcProvider(
-  process.env.RPC_PROVIDER, // Use 'goerli' for testnet and 'ethereum mainnet' for the mainnet.
+  process.env.RPC_PROVIDER, // Replace your RPC URL based on your destination network.
 )
 
 const signer = new Wallet(privateKey, provider)
@@ -517,7 +517,7 @@ In this method, you will use an ETH private key and an RPC URL to execute a Cros
 
 ```javascript
   const depositRes = await client.crossChainDeposit(
-    process.env.RPC_PROVIDER as string, // Use 'Polygon Mumbai' for the testnet and 'Polygon mainnet' for the mainnet.
+    process.env.RPC_PROVIDER as string, // Replace your RPC URL based on your destination network.
     privateKey, // Your ETH private key.
     'usdt', // Enter the coin symbol.
     1, // Enter the amount you want to deposit.
@@ -539,7 +539,7 @@ This method involves using a custom provider and signer, which can be created us
 import { Wallet, ethers } from 'ethers'
 
 const provider = new ethers.providers.JsonRpcProvider(
-  process.env.RPC_PROVIDER, // Use 'Polygon Mumbai' for the testnet and 'Polygon mainnet' for the mainnet.
+  process.env.RPC_PROVIDER, // Replace your RPC URL based on your destination network.
 )
 
 const signer = new Wallet(privateKey, provider)
