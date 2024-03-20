@@ -451,7 +451,7 @@ export class Client {
   }
 
   getNativeCurrencyByNetwork(network: CrossChainAvailableNetwork): string {
-    let networkConfig = {
+    const networkConfig = {
       POLYGON: 'matic',
       OPTIMISM: 'eth',
       ARBITRUM: 'eth',

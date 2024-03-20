@@ -141,7 +141,7 @@ export const getAllowance = async (
 
 export const toFixed = (x: number): string => {
   if (Math.abs(x) < 1.0) {
-    let e = parseInt(x.toString().split('e-')[1])
+    const e = parseInt(x.toString().split('e-')[1])
     if (e) {
       x *= Math.pow(10, e - 1)
       x = parseFloat('0.' + new Array(e).join('0') + x.toString().substring(2))
