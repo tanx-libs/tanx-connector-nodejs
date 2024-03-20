@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.3.0
+
+### Minor Changes
+
+- Added cross-chain deposit functionality.
+
 ## 1.2.1
 
 ### Patch Changes
