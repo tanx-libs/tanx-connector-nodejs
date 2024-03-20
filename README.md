@@ -521,7 +521,7 @@ In this method, you will use an ETH private key and an RPC URL to execute a Cros
     privateKey, // Your ETH private key.
     'usdt', // Enter the coin symbol.
     1, // Enter the amount you want to deposit.
-    'SCROLL' // Enter the network you want to deposit.
+    'SCROLL' // Enter the network you want to deposit into.
     // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden while executing the transaction.
     {
       gasLimit: '',
@@ -549,7 +549,7 @@ const depositPolygonRes = await client.depositFromPolygonNetworkWithSigner(
   provider, // The provider created above.
   'usdc', // Enter the coin symbol.
   0.00001, // Enter the amount you want to deposit.
-  'SCROLL' // Enter the network you want to deposit.
+  'SCROLL' // Enter the network you want to deposit into.
   // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden while executing the transaction.
   {
     gasLimit: '',
@@ -637,6 +637,6 @@ const fastWithdrawalRes = await client.fastWithdrawal(
   keyPair, // The keyPair created above
   0.0001, // Enter the amount you want to deposit
   'usdc', // Enter the coin symbol
-  'POLYGON', // Enter the network you want to withdraw.
+  'POLYGON', // Enter the network you want to withdraw from.
 )
 ```
