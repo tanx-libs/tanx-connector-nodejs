@@ -209,6 +209,28 @@ export const filterEthereumCoin = (
   return currentCoin
 }
 
+function generateErrorMessage(
+  coin: string,
+  network: string,
+  supportedCoins: string[],
+): string {
+  // coin = coin.toUpperCase()
+  network = network.toUpperCase()
+
+  // const supportedCoinList = supportedCoins.join(', ')
+  const lastIndex = supportedCoins.length - 1
+  const lastCoin = supportedCoins[lastIndex]
+  let supportedCoinsText = supportedCoins.slice(0, lastIndex).join(', ')
+
+  if (lastIndex > 0) {
+    supportedCoinsText += ` and ${lastCoin}`
+  } else {
+    supportedCoinsText += lastCoin
+  }
+
+  return `The coin '${coin}' is not supported on the ${network} network. Supported coins include ${supportedCoinsText}.`
+}
+
 export const filterCrossChainCoin = (
   config: NetworkCoinStat,
   coin: string,
@@ -229,9 +251,7 @@ export const filterCrossChainCoin = (
     if (!allowedToken) {
       throw new CoinNotFoundError(
         network
-          ? `Coin '${coin.toUpperCase()}' is not supported on the ${network} network. Supported coins include ${allowedTokensForDeposit
-              .join(', ')
-              ?.toUpperCase()}.`
+          ? generateErrorMessage(coin, network, allowedTokensForFastWithdrawal)
           : `Coin '${coin.toUpperCase()}' not found`,
       )
     }
@@ -242,9 +262,7 @@ export const filterCrossChainCoin = (
     if (!allowedToken) {
       throw new CoinNotFoundError(
         network
-          ? `Coin '${coin.toUpperCase()}' is not supported on the ${network} network. Supported coins include ${allowedTokensForDeposit
-              .join(', ')
-              ?.toUpperCase()}.`
+          ? generateErrorMessage(coin, network, allowedTokensForDeposit)
           : `Coin '${coin.toUpperCase()}' not found`,
       )
     }

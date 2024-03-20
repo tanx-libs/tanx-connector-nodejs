@@ -119,9 +119,9 @@ const approveAllowance = async () => {
         process.env.RPC_PROVIDER,
       )
       const signer = new Wallet(privateKey, provider)
-      // Supported cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
+      // Supported cross-chain networks - 'ETHEREUM' | 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
       const res = await client.setAllowance(
-        'btc',
+        'usdt',
         signer,
         'POLYGON',
         // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden.
@@ -283,18 +283,18 @@ const crossDepositAndWithdrawal = async () => {
       const signer = new Wallet(privateKey, provider)
 
       // Deposit with ETH private key
-      const deposit = await client.crossChainDeposit(
-        process.env.RPC_PROVIDER as string,
-        privateKey,
-        'BTC',
-        '1',
-        'POLYGON',
-        // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden.
-        // {
-        //   gasLimit: '',
-        //   gasPrice: '',
-        // },
-      )
+      // const deposit = await client.crossChainDeposit(
+      //   process.env.RPC_PROVIDER as string,
+      //   privateKey,
+      //   'btc',
+      //   '0.0001',
+      //   'POLYGON',
+      //   // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden.
+      //   // {
+      //   //   gasLimit: '',
+      //   //   gasPrice: '',
+      //   // },
+      // )
 
       // Deposit with signer
       // const deposit = await client.crossChainDepositWithSigner(
@@ -313,12 +313,12 @@ const crossDepositAndWithdrawal = async () => {
       })
 
       // Fast withdrawal
-      // const fastWithdrawalRes = await client.fastWithdrawal(
-      //   keyPair,
-      //   12,
-      //   'usdt',
-      //   'MODE',
-      // )
+      const fastWithdrawalRes = await client.fastWithdrawal(
+        keyPair,
+        0.0054,
+        'btc',
+        'POLYGON',
+      )
 
       // Get a list of fast withdrawals
       // const fastwithdrawalsList = await client.listFastWithdrawals({
@@ -327,10 +327,10 @@ const crossDepositAndWithdrawal = async () => {
       // })
 
       console.log({
-        crossDeposit: deposit,
+        // crossDeposit: deposit,
         depositList,
         // fastwithdrawalsList,
-        // fastWithdrawalRes,
+        fastWithdrawalRes,
       })
     } catch (e) {
       // Error: AuthenticationError | AxiosError
