@@ -1,6 +1,13 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
+  '@ethersproject/bignumber':
+    specifier: ^5.7.0
+    version: 5.7.0
   axios:
     specifier: ^1.3.4
     version: 1.3.4

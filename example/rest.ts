@@ -121,14 +121,14 @@ const approveAllowance = async () => {
       const signer = new Wallet(privateKey, provider)
       // Supported cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
       const res = await client.setAllowance(
-        'usdc',
+        'btc',
         signer,
-        'MODE',
+        'POLYGON',
         // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden.
-        {
-          gasLimit: '',
-          gasPrice: '',
-        },
+        // {
+        //   gasLimit: '',
+        //   gasPrice: '',
+        // },
       )
 
       console.log({ res }, 'allowance')
@@ -286,14 +286,14 @@ const crossDepositAndWithdrawal = async () => {
       const deposit = await client.crossChainDeposit(
         process.env.RPC_PROVIDER as string,
         privateKey,
-        'usdc',
+        'BTC',
         '1',
-        'MODE',
+        'POLYGON',
         // This argument is optional; if you pass the argument, the gasLimit and gasPrice will be overridden.
-        {
-          gasLimit: '',
-          gasPrice: '',
-        },
+        // {
+        //   gasLimit: '',
+        //   gasPrice: '',
+        // },
       )
 
       // Deposit with signer
@@ -302,8 +302,8 @@ const crossDepositAndWithdrawal = async () => {
       //   provider,
       //   'usdc',
       //   '1',
-      //   'MODE'
-      // );
+      //   'SCROLL',
+      // )
 
       // Get a list of deposits
       const depositList = await client.listDeposits({
@@ -313,24 +313,24 @@ const crossDepositAndWithdrawal = async () => {
       })
 
       // Fast withdrawal
-      const fastWithdrawalRes = await client.fastWithdrawal(
-        keyPair,
-        12,
-        'usdc',
-        'MODE',
-      )
+      // const fastWithdrawalRes = await client.fastWithdrawal(
+      //   keyPair,
+      //   12,
+      //   'usdt',
+      //   'MODE',
+      // )
 
       // Get a list of fast withdrawals
-      const fastwithdrawalsList = await client.listFastWithdrawals({
-        page: 1, // This is an optional field
-        network: 'MODE', // This is an optional field
-      })
+      // const fastwithdrawalsList = await client.listFastWithdrawals({
+      //   page: 1, // This is an optional field
+      //   network: 'MODE', // This is an optional field
+      // })
 
       console.log({
         crossDeposit: deposit,
         depositList,
-        fastwithdrawalsList,
-        fastWithdrawalRes,
+        // fastwithdrawalsList,
+        // fastWithdrawalRes,
       })
     } catch (e) {
       // Error: AuthenticationError | AxiosError
@@ -342,7 +342,7 @@ const crossDepositAndWithdrawal = async () => {
     }
   }
 }
-// crossDepositAndWithdrawal()
+crossDepositAndWithdrawal()
 
 const internalTransfers = async () => {
   // load your privateKey and walletAddress

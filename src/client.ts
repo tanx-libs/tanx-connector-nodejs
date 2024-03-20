@@ -400,9 +400,9 @@ export class Client {
         +decimal,
         provider,
       )
-      if (allowance < +amount) {
+      if (Number(allowance) < +amount) {
         throw new AllowanceTooLowError(
-          `Current Allowance (${allowance}) is too low, please use Client.setAllowance()`,
+          `Current Allowance (${allowance}) is too low, please use client.setAllowance()`,
         )
       }
 
@@ -484,8 +484,9 @@ export class Client {
 
     const currentCoin = filterCrossChainCoin(
       selectedNetworkConfig,
-      currency,
+      currency.toLowerCase(),
       'DEPOSIT',
+      network.toUpperCase(),
     )
 
     const { blockchain_decimal: decimal, token_contract: tokenContract } =
@@ -512,7 +513,7 @@ export class Client {
     const balance = await this.getEVMTokenBalance(
       provider,
       signer.address,
-      currency,
+      currency.toLowerCase(),
       network,
     )
 
@@ -524,7 +525,7 @@ export class Client {
 
     let depositResponse
 
-    if (currency === this.getNativeCurrencyByNetwork(network)) {
+    if (currency.toLowerCase() === this.getNativeCurrencyByNetwork(network)) {
       depositResponse = await contract.depositNative(params)
     } else {
       const allowance = await getAllowance(
@@ -535,11 +536,9 @@ export class Client {
         provider,
       )
 
-      console.log({ allowance: allowance.toString(), amount })
-
-      if (allowance < +amount) {
+      if (Number(allowance) < +amount) {
         throw new AllowanceTooLowError(
-          `Current Allowance (${allowance}) is too low, please use Client.approveUnlimitedAllowancePolygonNetwork()`,
+          `Current Allowance (${allowance}) is too low, please use client.setAllowance()`,
         )
       }
 
@@ -551,7 +550,7 @@ export class Client {
 
     const res = await this.crossChainDepositStart(
       amount,
-      currency,
+      currency.toLowerCase(),
       depositResponse['hash'],
       depositResponse['nonce'],
       network,
@@ -577,7 +576,7 @@ export class Client {
     return this.crossChainDepositWithSigner(
       signer,
       provider,
-      currency,
+      currency.toLowerCase(),
       amount,
       network,
       gasOptions,
@@ -591,7 +590,10 @@ export class Client {
     gasOptions?: ethers.Overrides,
   ) {
     if (network === 'ETHEREUM') {
-      return await this.approveUnlimitedAllowanceEthereumNetwork(coin, signer)
+      return await this.approveUnlimitedAllowanceEthereumNetwork(
+        coin.toLowerCase(),
+        signer,
+      )
     }
     const network_config = await this.getNetworkConfig()
     const currenctNetworkConfig = network_config[network.toUpperCase()]
@@ -600,9 +602,11 @@ export class Client {
 
     const currentCoin = filterCrossChainCoin(
       currenctNetworkConfig,
-      coin,
+      coin.toLowerCase(),
       'DEPOSIT',
+      network.toUpperCase(),
     )
+
     const { token_contract: tokenContract } = currentCoin
 
     const res = await approveUnlimitedAllowanceUtil(
@@ -632,7 +636,12 @@ export class Client {
     const allowedTokens = polygonConfig.tokens
     const contractAddress = polygonConfig.deposit_contract
 
-    const currentCoin = filterCrossChainCoin(polygonConfig, currency, 'DEPOSIT')
+    const currentCoin = filterCrossChainCoin(
+      polygonConfig,
+      currency,
+      'DEPOSIT',
+      'POLYGON',
+    )
 
     const { blockchain_decimal: decimal, token_contract: tokenContract } =
       currentCoin
@@ -680,9 +689,9 @@ export class Client {
         +decimal,
         provider,
       )
-      if (allowance < +amount) {
+      if (Number(allowance) < +amount) {
         throw new AllowanceTooLowError(
-          `Current Allowance (${allowance}) is too low, please use Client.approveUnlimitedAllowancePolygonNetwork()`,
+          `Current Allowance (${allowance}) is too low, please use client.setAllowance()`,
         )
       }
       depositResponse = await polygonContract.deposit(
@@ -804,16 +813,21 @@ export class Client {
     this.getAuthStatus()
     if (network !== 'ETHEREUM') {
       const network_config = await this.getNetworkConfig()
-      const coinConfig = network_config[network]
-      const _ = filterCrossChainCoin(coinConfig, coinSymbol, 'WITHDRAWAL')
+      const coinConfig = network_config[network.toUpperCase()]
+      const _ = filterCrossChainCoin(
+        coinConfig,
+        coinSymbol.toLowerCase(),
+        'WITHDRAWAL',
+        network.toUpperCase(),
+      )
     } else {
       const { payload: coinStats } = await this.getCoinStatus()
-      const _ = filterEthereumCoin(coinStats, coinSymbol)
+      const _ = filterEthereumCoin(coinStats, coinSymbol.toLowerCase())
     }
 
     const initiateResponse = await this.startFastWithdrawal({
       amount: Number(amount),
-      symbol: coinSymbol,
+      symbol: coinSymbol.toLowerCase(),
       network: network,
     })
     const signature = signWithdrawalTxMsgHash(
@@ -945,7 +959,7 @@ export class Client {
       `/sapi/v1/deposits/crosschain/create/`,
       {
         amount: amountTostring,
-        currency,
+        currency: currency.toLowerCase(),
         network: network ? network : 'POLYGON',
         deposit_blockchain_hash: depositBlockchainHash,
         deposit_blockchain_nonce: depositBlockchainNonce,

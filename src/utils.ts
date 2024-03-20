@@ -104,7 +104,7 @@ export const getNonce = (
   return baseNonce.then((nonce: number) => nonce + nonceOffset++)
 }
 
-export function dequantize(number: string, decimals: number): number {
+export function dequantize(number: string, decimals: number): BigNumber {
   // const factor = 10 ** decimals
   // return typeof number === 'number'
   //   ? number / factor
@@ -129,14 +129,13 @@ export const getAllowance = async (
   tokenContract: string,
   decimal: number,
   provider: ethers.providers.Provider,
-) => {
+): Promise<BigNumber> => {
   const contract = new ethers.Contract(
     tokenContract,
     CONFIG.ERC20_ABI,
     provider,
   )
   const allowance = await contract.allowance(userAddress, starkContract)
-  console.log({ allowance: String(allowance) })
   return ethers.utils.parseUnits(String(allowance), decimal)
 }
 
@@ -164,13 +163,14 @@ export const approveUnlimitedAllowanceUtil = async (
   signer: ethers.Signer,
   gasOptions?: ethers.Overrides,
 ) => {
-  const gasPrice = signer.getGasPrice()
+  const gasPrice = await signer.getGasPrice()
   const contract = new ethers.Contract(tokenContract, CONFIG.ERC20_ABI, signer)
 
   const gasLimit = await contract.estimateGas.approve(
     contractAddress,
     ethers.BigNumber.from(MAX_INT_ALLOWANCE),
   )
+
   const approval = await contract.approve(
     contractAddress,
     ethers.BigNumber.from(MAX_INT_ALLOWANCE),
@@ -194,7 +194,18 @@ export const filterEthereumCoin = (
       }
     })
     .filter((c) => c !== undefined)[0]
-  if (!currentCoin) throw new CoinNotFoundError(`Coin '${coin}' not found`)
+
+  const supportedCoinList = Object.keys(coinStatsPayload).map((coinName) => {
+    return coinStatsPayload[coinName].symbol
+  })
+
+  if (!currentCoin) {
+    throw new CoinNotFoundError(
+      `Coin '${coin.toUpperCase()}' not supported on the ETHEREUM network. Supported coins include ${supportedCoinList
+        .join(', ')
+        ?.toUpperCase()}.`,
+    )
+  }
   return currentCoin
 }
 
@@ -202,6 +213,7 @@ export const filterCrossChainCoin = (
   config: NetworkCoinStat,
   coin: string,
   type: string,
+  network?: string,
 ) => {
   const allowedTokens = config.tokens
   const allowedTokensForDeposit = config.allowed_tokens_for_deposit
@@ -214,12 +226,28 @@ export const filterCrossChainCoin = (
     const allowedToken = allowedTokensForFastWithdrawal?.find(
       (token) => token === coin,
     )
-    if (!allowedToken) throw new CoinNotFoundError(`Coin '${coin}' not found`)
+    if (!allowedToken) {
+      throw new CoinNotFoundError(
+        network
+          ? `Coin '${coin.toUpperCase()}' is not supported on the ${network} network. Supported coins include ${allowedTokensForDeposit
+              .join(', ')
+              ?.toUpperCase()}.`
+          : `Coin '${coin.toUpperCase()}' not found`,
+      )
+    }
   } else if (type === 'DEPOSIT') {
     const allowedToken = allowedTokensForDeposit?.find(
       (token) => token === coin,
     )
-    if (!allowedToken) throw new CoinNotFoundError(`Coin '${coin}' not found`)
+    if (!allowedToken) {
+      throw new CoinNotFoundError(
+        network
+          ? `Coin '${coin.toUpperCase()}' is not supported on the ${network} network. Supported coins include ${allowedTokensForDeposit
+              .join(', ')
+              ?.toUpperCase()}.`
+          : `Coin '${coin.toUpperCase()}' not found`,
+      )
+    }
   } else {
     throw new CoinNotFoundError(`Type not found`)
   }
