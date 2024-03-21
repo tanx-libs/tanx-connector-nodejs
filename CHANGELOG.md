@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.3.1
+
+### Patch Changes
+
+- fix: internal method bug
+
 ## 1.3.0
 
 ### Minor Changes
