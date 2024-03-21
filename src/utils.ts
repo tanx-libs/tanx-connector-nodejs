@@ -104,7 +104,7 @@ export const getNonce = (
   return baseNonce.then((nonce: number) => nonce + nonceOffset++)
 }
 
-export function dequantize(number: string, decimals: number): BigNumber {
+export function dequantize(number: string, decimals: number): string {
   // const factor = 10 ** decimals
   // return typeof number === 'number'
   //   ? number / factor
