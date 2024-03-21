@@ -109,7 +109,7 @@ export function dequantize(number: string, decimals: number): BigNumber {
   // return typeof number === 'number'
   //   ? number / factor
   //   : parseFloat(number) / factor
-  return ethers.utils.parseUnits(number, decimals)
+  return ethers.utils.formatUnits(number, decimals)
 }
 
 export const get0X0to0X = (address: string) => {
