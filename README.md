@@ -544,7 +544,7 @@ const provider = new ethers.providers.JsonRpcProvider(
 
 const signer = new Wallet(privateKey, provider)
 
-const depositPolygonRes = await client.depositFromPolygonNetworkWithSigner(
+const depositPolygonRes = await client.crossChainDepositWithSigner(
   signer, // The signer created above.
   provider, // The provider created above.
   'usdc', // Enter the coin symbol.
