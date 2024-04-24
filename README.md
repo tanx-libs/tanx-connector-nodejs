@@ -623,6 +623,7 @@ const fastWithdrawalRes = await client.fastWithdrawal(
 //Get a list of fast withdrawals
 const fastwithdrawalsList = await client.listFastWithdrawals({
   page: 2, // This is an optional field
+  network: 'ETHEREUM', // Allowed networks include 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', and 'MODE'
 })
 ```
 
