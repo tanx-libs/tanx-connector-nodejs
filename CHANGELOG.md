@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.3.3
+
+### Patch Changes
+
+- update list deposit interface
+
 ## 1.3.2
 
 ### Patch Changes
