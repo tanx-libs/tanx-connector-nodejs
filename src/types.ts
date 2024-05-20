@@ -392,11 +392,15 @@ export interface ProcessFastWithdrawalPayload {
 
 export interface Deposit {
   token_id: string
+  token: string
+  network: string
   blockchain_deposit_status: string
   brine_deposit_status: string
   deposit_blockchain_hash: string
   amount: string
   created_at: string
+  platform_fees: any
+  warning_message: any
 }
 
 export interface NormalWithdrawal {
