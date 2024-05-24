@@ -615,7 +615,7 @@ With Fast Withdrawal, your funds will be processed in an expedited timeframe, of
 ```javascript
 const fastWithdrawalRes = await client.fastWithdrawal(
   keyPair, // The keyPair created above
-  0.0001, // Enter the amount you want to deposit
+  11, // Enter the amount you want to withdraw
   'usdc', // Enter the coin symbol
   'ETHEREUM', // Allowed networks include 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', and 'MODE'
 )
@@ -636,7 +636,7 @@ On the cross-chain withdrawal network, we only support fast withdrawals.
 ```javascript
 const fastWithdrawalRes = await client.fastWithdrawal(
   keyPair, // The keyPair created above
-  0.0001, // Enter the amount you want to deposit
+  11, // Enter the amount you want to withdraw
   'usdc', // Enter the coin symbol
   'POLYGON', // Enter the network you want to withdraw from.
 )
