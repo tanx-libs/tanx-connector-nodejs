@@ -1029,7 +1029,7 @@ export class Client {
     )
 
     // Fetch the fee details for LayerSwap deposit
-    let layerSwapFeeDetail = await this.fetchLayerSwapDepositFee({
+    const layerSwapFeeDetail = await this.fetchLayerSwapDepositFee({
       token_id,
       source_network,
     })
@@ -1062,7 +1062,7 @@ export class Client {
     }
 
     // Initiate the LayerSwap deposit
-    let initiateRes = await this.initaiteLayerSwapDeposit(
+    const initiateRes = await this.initaiteLayerSwapDeposit(
       amount,
       token_id,
       userStarknetPublicAddress,
@@ -1070,13 +1070,13 @@ export class Client {
     )
 
     // Format the data required for initiating the deposit
-    let formattedData = this.formatLayerSwapInitateData(
+    const formattedData = this.formatLayerSwapInitateData(
       initiateRes,
       tokenContract,
     )
 
     // Execute the StarkNet transaction
-    let executeResponse = await executeStarknetTransaction(
+    const executeResponse = await executeStarknetTransaction(
       rpcURL,
       userStarknetPublicAddress,
       userStarknetPrivateKey,
@@ -1084,7 +1084,7 @@ export class Client {
     )
 
     // Save the transaction details
-    let saveRes = await this.saveLayerSwapTx(
+    const saveRes = await this.saveLayerSwapTx(
       formattedData.ref_id,
       executeResponse.transaction_hash,
     )
