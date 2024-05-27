@@ -11,6 +11,7 @@ export type CrossChainAvailableNetwork =
   | 'LINEA'
   | 'SCROLL'
   | 'MODE'
+export type LayerSwapAvailableNetwork = 'STARKNET'
 
 export interface Response<T> {
   status: string
@@ -376,6 +377,7 @@ export interface InitiateWithdrawalPayload {
   amount: number
   symbol: string
   network?: string
+  cc_address?: string
 }
 
 export interface ValidateNormalWithdrawalPayload {
@@ -428,6 +430,37 @@ export interface Pagination<T> {
   next: string | null
   previous: string | null
   results: T[]
+}
+
+export interface LayerSwapDepositFeePayload {
+  min_amount: string
+  max_amount: string
+  fee_amount: string
+}
+
+export interface LayerSwapDepositFeeParams {
+  token_id: string
+  source_network: LayerSwapAvailableNetwork
+}
+
+export interface InitaiteLayerSwapDepositPayload {
+  ref_id: string
+  ls_data: LsData
+}
+
+interface LsData {
+  to_address: string
+  data: ContractCall[]
+  value: string
+  base_units: string
+  chain_id: string
+  network: string
+}
+
+interface ContractCall {
+  contractAddress: string
+  entrypoint: string
+  calldata: string[]
 }
 
 // export interface DepositResponse extends {}

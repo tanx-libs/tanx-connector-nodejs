@@ -14,10 +14,14 @@ import { Wallet, ethers } from 'ethers'
 
 dotenv.config()
 
+// load your privateKey and walletAddress
+const privateKey = process.env.PRIVATE_KEY
+const ethAddress = process.env.ETH_ADDRESS
+
+const starknetPrivateKey = process.env.STARKNET_PRIVATE_KEY
+const starknetPublicKey = process.env.STARKNET_PUBLIC_KEY
+
 const main = async () => {
-  // load your privateKey and walletAddress
-  const privateKey = process.env.PRIVATE_KEY
-  const ethAddress = process.env.ETH_ADDRESS
   // const tanxOrganizationKey = process.env.TANX_ORGANIZATION_KEY
   // const tanxApiKey = process.env.TANX_API_KEY
 
@@ -342,7 +346,7 @@ const crossDepositAndWithdrawal = async () => {
     }
   }
 }
-crossDepositAndWithdrawal()
+// crossDepositAndWithdrawal()
 
 const internalTransfers = async () => {
   // load your privateKey and walletAddress
@@ -418,3 +422,68 @@ const getL2Keys = async (ethPrivateKey: string) => {
   console.log(`stark private_key ${stark_private_key}`)
 }
 // getL2Keys("<enter your eth private key>")
+
+const starknetDeposit = async () => {
+  try {
+    const client = new Client('mainnet')
+    const _ = await client.completeLogin(
+      ethAddress as string,
+      privateKey as string,
+    )
+    const starknetDepositRes = await client.starknetDeposit(
+      '14',
+      'usdc',
+      process.env.STARKNET_RPC_PROVIDER as string,
+      starknetPublicKey as string,
+      starknetPrivateKey as string,
+    )
+    console.log({ starknetDepositRes })
+  } catch (error) {
+    console.log({ error })
+  }
+}
+
+const starknetWithdrawal = async () => {
+  // Supported cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE' | 'STARKNET'
+
+  // Load your privateKey and walletAddress
+  const privateKey = process.env.PRIVATE_KEY
+  const ethAddress = process.env.ETH_ADDRESS
+  // const tanxOrganizationKey = process.env.TANX_ORGANIZATION_KEY;
+  // const tanxApiKey = process.env.TANX_API_KEY;
+
+  if (privateKey && ethAddress) {
+    // Handle in try-catch block
+    try {
+      // Create a rest client instance (you can pass options)
+      const client = new Client('mainnet')
+
+      // Login to use private endpoints
+      const loginRes = await client.completeLogin(ethAddress, privateKey)
+      console.log(loginRes.payload)
+
+      const userSignature = createUserSignature(privateKey, 'mainnet') // or sign it yourself
+      const keyPair = getKeyPairFromSignature(userSignature.signature)
+
+      // Fast withdrawal
+      const fastWithdrawalRes = await client.fastWithdrawal(
+        keyPair,
+        '10',
+        'usdc',
+        'STARKNET',
+        starknetPublicKey as string,
+      )
+      console.log({ fastWithdrawalRes })
+    } catch (e) {
+      // Error: AuthenticationError | AxiosError
+      if (isAuthenticationError(e)) {
+        console.log(e)
+      } else {
+        console.log(e)
+      }
+    }
+  }
+}
+
+// starknetDeposit()
+// starknetWithdrawal()
