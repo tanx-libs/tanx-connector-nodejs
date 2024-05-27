@@ -26,7 +26,7 @@ export const executeStarknetTransaction = async (
   data: any,
 ) => {
   const provider = new Provider({ rpc: { nodeUrl: rpcUrl } })
-  let account = new Account(provider, userPublicAddress, privateKey)
+  const account = new Account(provider, userPublicAddress, privateKey)
   const res = await account.execute(JSON.parse(data))
   return res
 }
