@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.4.0
+
+### Minor Changes
+
+- Feat: Starknet Cross-Chain Deposit and Withdrawal Support
+
 ## 1.3.4
 
 ### Patch Changes
