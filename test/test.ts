@@ -575,41 +575,146 @@ describe('Brine Connector', () => {
       })
     })
     describe('Cross-Chain Deposits', () => {
-      it('Start Cross-Chain Deposit - 200', async () => {
-        mock1
-          .onPost('/sapi/v1/deposits/crosschain/create/')
-          .reply(200, responses.depositFromPolygonNetworkStartResponse)
-        const res = await client.crossChainDepositStart(
-          '100000',
-          '0x27..',
-          '0x67..',
-          '930',
-        )
-        expect(res).to.have.property('status')
-        expect(res.status).to.eql('success')
-        expect(res).to.have.property('payload')
-      })
-
-      it('Start Cross-Chain Deposit - 400', async () => {
-        mock1
-          .onPost('/sapi/v1/deposits/crosschain/create/')
-          .reply(400, responses.depositFromPolygonNetworkStartMissingParameters)
-
-        try {
+      describe('Cross-Chain Deposits - EVM', () => {
+        it('Start Cross-Chain Deposit - 200', async () => {
+          mock1
+            .onPost('/sapi/v1/deposits/crosschain/create/')
+            .reply(200, responses.depositFromPolygonNetworkStartResponse)
           const res = await client.crossChainDepositStart(
             '100000',
             '0x27..',
             '0x67..',
             '930',
           )
-        } catch (e: unknown) {
-          const data = (e as AxiosError<Response<string>>)?.response?.data
-          if (data) {
-            expect(data).to.have.property('status')
-            expect(data.status).to.eql('error')
-            expect(data.message).to.include('Essential parameters')
+          expect(res).to.have.property('status')
+          expect(res.status).to.eql('success')
+          expect(res).to.have.property('payload')
+        })
+
+        it('Start Cross-Chain Deposit - 400', async () => {
+          mock1
+            .onPost('/sapi/v1/deposits/crosschain/create/')
+            .reply(
+              400,
+              responses.depositFromPolygonNetworkStartMissingParameters,
+            )
+
+          try {
+            const res = await client.crossChainDepositStart(
+              '100000',
+              '0x27..',
+              '0x67..',
+              '930',
+            )
+          } catch (e: unknown) {
+            const data = (e as AxiosError<Response<string>>)?.response?.data
+            if (data) {
+              expect(data).to.have.property('status')
+              expect(data.status).to.eql('error')
+              expect(data.message).to.include('Essential parameters')
+            }
           }
-        }
+        })
+      })
+      describe('Cross-Chain Deposits - Starknet', () => {
+        it('Fetch Layer Swap Info - 200', async () => {
+          mock1
+            .onGet('/sapi/v1/payment/layer-swap/deposit/fee/')
+            .reply(200, responses.layerSwapDepositInfoResponse)
+          const res = await client.fetchLayerSwapDepositInfo({
+            source_network: 'STARKNET',
+            token_id: 'usdc',
+          })
+          expect(res).to.have.property('status')
+          expect(res.status).to.eql('success')
+          expect(res).to.have.property('payload')
+          expect(res.payload).to.have.property('fee_amount')
+          expect(res.payload).to.have.property('max_amount')
+          expect(res.payload).to.have.property('min_amount')
+        })
+
+        it('Fetch Layer Swap Info - 400', async () => {
+          mock1
+            .onGet('/sapi/v1/payment/layer-swap/deposit/fee/')
+            .reply(400, responses.layerSwapDepositInfoStartMissingParameters)
+          try {
+            const res = await client.fetchLayerSwapDepositInfo({
+              source_network: 'STARKNET',
+              token_id: '',
+            })
+          } catch (e: unknown) {
+            const data = (e as AxiosError<Response<string>>)?.response?.data
+            if (data) {
+              expect(data).to.have.property('status')
+              expect(data.status).to.eql('error')
+              expect(data.message).to.include('Essential parameters')
+            }
+          }
+        })
+
+        it('Layer Swap Deposit Initiate - 200', async () => {
+          mock1
+            .onPost('/sapi/v1/payment/layer-swap/deposit/')
+            .reply(200, responses.layerSwapDepositiInitiateResponse)
+          const res = await client.initaiteLayerSwapDeposit(
+            '10',
+            'usdc',
+            '0x..',
+            responses.layerSwapDepositInfoResponse.payload,
+          )
+          expect(res).to.have.property('status')
+          expect(res.status).to.eql('success')
+          expect(res).to.have.property('payload')
+        })
+
+        it('Layer Swap Deposit Initiate - 400', async () => {
+          mock1
+            .onPost('/sapi/v1/payment/layer-swap/deposit/')
+            .reply(400, responses.layerSwapDepositInfoStartMissingParameters)
+
+          try {
+            const res = await client.initaiteLayerSwapDeposit(
+              '10',
+              '',
+              '',
+              responses.layerSwapDepositInfoResponse.payload,
+            )
+          } catch (e: unknown) {
+            const data = (e as AxiosError<Response<string>>)?.response?.data
+            if (data) {
+              expect(data).to.have.property('status')
+              expect(data.status).to.eql('error')
+              expect(data.message).to.include('Essential parameters')
+            }
+          }
+        })
+
+        it('Layer Swap Deposit Save - 200', async () => {
+          mock1
+            .onPost('/sapi/v1/payment/layer-swap/deposit/save/')
+            .reply(200, responses.layerSwapDepositSaveResponse)
+          const res = await client.saveLayerSwapTx('ref_id', '0x..')
+          expect(res).to.have.property('status')
+          expect(res.status).to.eql('success')
+          expect(res).to.have.property('payload')
+        })
+
+        it('Layer Swap Deposit Save - 400', async () => {
+          mock1
+            .onPost('/sapi/v1/payment/layer-swap/deposit/save/')
+            .reply(400, responses.layerSwapDepositInfoStartMissingParameters)
+
+          try {
+            const res = await client.saveLayerSwapTx('', '')
+          } catch (e: unknown) {
+            const data = (e as AxiosError<Response<string>>)?.response?.data
+            if (data) {
+              expect(data).to.have.property('status')
+              expect(data.status).to.eql('error')
+              expect(data.message).to.include('Essential parameters')
+            }
+          }
+        })
       })
 
       it('List Deposit - 200', async () => {
