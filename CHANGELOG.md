@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.4.1
+
+### Patch Changes
+
+- docs: updates README
+
 ## 1.4.0
 
 ### Minor Changes
