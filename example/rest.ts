@@ -11,6 +11,7 @@ import {
   signOrderWithStarkKeys,
 } from '../src'
 import { Wallet, ethers } from 'ethers'
+import { Account, RpcProvider } from 'starknet'
 
 dotenv.config()
 
@@ -259,7 +260,7 @@ const ethereumDepositAndWithdrawal = async () => {
 }
 // ethereumDepositAndWithdrawal()
 
-const crossDepositAndWithdrawal = async () => {
+const evmCrossDepositAndWithdrawal = async () => {
   // Supported cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
 
   // Load your privateKey and walletAddress
@@ -346,7 +347,7 @@ const crossDepositAndWithdrawal = async () => {
     }
   }
 }
-// crossDepositAndWithdrawal()
+// evmCrossDepositAndWithdrawal()
 
 const internalTransfers = async () => {
   // load your privateKey and walletAddress
@@ -430,14 +431,38 @@ const starknetDeposit = async () => {
       ethAddress as string,
       privateKey as string,
     )
-    const starknetDepositRes = await client.starknetDeposit(
-      '14',
-      'usdc',
-      process.env.STARKNET_RPC_PROVIDER as string,
+    // const starknetDepositRes = await client.starknetDeposit(
+    //   '13',
+    //   'usdc',
+    //   process.env.STARKNET_RPC_PROVIDER as string,
+    //   starknetPublicKey as string,
+    //   starknetPrivateKey as string,
+    // )
+
+    const provider = new RpcProvider({
+      nodeUrl: process.env.STARKNET_RPC_PROVIDER as string,
+    })
+    const account = new Account(
+      provider,
       starknetPublicKey as string,
       starknetPrivateKey as string,
     )
-    console.log({ starknetDepositRes })
+    const starknetDepositRes = await client.starknetDepositWithStarknetSigner(
+      '4',
+      'usdc',
+      starknetPublicKey as string,
+      account,
+      provider,
+    )
+
+    // Get a list of deposits
+    const depositList = await client.listDeposits({
+      page: 1, // This is an optional field
+      limit: 1, // This is an optional field
+      network: 'STARKNET', // This is an optional field
+    })
+
+    console.log({ starknetDepositRes, depositList })
   } catch (error) {
     console.log({ error })
   }
@@ -473,7 +498,12 @@ const starknetWithdrawal = async () => {
         'STARKNET',
         starknetPublicKey as string,
       )
-      console.log({ fastWithdrawalRes })
+
+      const fastWithdrawalsList = await client.listFastWithdrawals({
+        network: 'STARKNET',
+      })
+
+      console.log({ fastWithdrawalRes, fastWithdrawalsList })
     } catch (e) {
       // Error: AuthenticationError | AxiosError
       if (isAuthenticationError(e)) {

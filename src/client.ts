@@ -84,6 +84,7 @@ import {
   InvalidAmountError,
 } from './error'
 import { executeStarknetTransaction, getStarknetUserBalance } from './starknet'
+import { Account, AccountInterface, RpcProvider } from 'starknet'
 
 export class Client {
   axiosInstance: AxiosInstanceType
@@ -972,21 +973,10 @@ export class Client {
     return res.data
   }
 
-  async fetchLayerSwapDepositFee(
+  async fetchLayerSwapDepositInfo(
     params?: LayerSwapDepositFeeParams,
   ): Promise<Response<LayerSwapDepositFeePayload>> {
     this.getAuthStatus()
-    const network_config = await this.getNetworkConfig()
-    const selectedNetworkConfig =
-      network_config[params?.source_network as string]
-
-    const _ = filterCrossChainCoin(
-      selectedNetworkConfig,
-      params?.token_id?.toLowerCase() as string,
-      'DEPOSIT',
-      params?.source_network?.toUpperCase() as string,
-    )
-
     const res = await this.axiosInstance.get<
       Response<LayerSwapDepositFeePayload>
     >(`/sapi/v1/payment/layer-swap/deposit/fee/`, { params: params })
@@ -994,15 +984,14 @@ export class Client {
     return res.data
   }
 
-  async starknetDeposit(
+  async starknetDepositWithStarknetSigner(
     amount: string | number,
     token_id: string,
-    rpcURL: string,
     userStarknetPublicAddress: string,
-    userStarknetPrivateKey: string,
+    account: AccountInterface,
+    provider: RpcProvider,
   ) {
     const source_network = 'STARKNET'
-
     // Fetch the network configuration
     const network_config = await this.getNetworkConfig()
 
@@ -1022,17 +1011,19 @@ export class Client {
 
     // Get the user's balance on StarkNet
     const balance = await getStarknetUserBalance(
+      provider,
       tokenContract,
-      rpcURL,
       userStarknetPublicAddress,
       Number(decimal),
     )
 
     // Fetch the fee details for LayerSwap deposit
-    const layerSwapFeeDetail = await this.fetchLayerSwapDepositFee({
+    const layerSwapFeeDetail = await this.fetchLayerSwapDepositInfo({
       token_id,
       source_network,
     })
+
+    console.log({ layerSwapFeeDetail: JSON.stringify(layerSwapFeeDetail) })
 
     // Extract the max and min allowed amounts for the deposit
     const maxAmount = Number(layerSwapFeeDetail.payload?.max_amount)
@@ -1069,6 +1060,8 @@ export class Client {
       layerSwapFeeDetail.payload,
     )
 
+    console.log({ initiateRes: JSON.stringify(initiateRes) })
+
     // Format the data required for initiating the deposit
     const formattedData = this.formatLayerSwapInitateData(
       initiateRes,
@@ -1077,11 +1070,13 @@ export class Client {
 
     // Execute the StarkNet transaction
     const executeResponse = await executeStarknetTransaction(
-      rpcURL,
+      provider,
       userStarknetPublicAddress,
-      userStarknetPrivateKey,
+      account,
       formattedData.data,
     )
+
+    console.log({ executeResponse: JSON.stringify(executeResponse) })
 
     // Save the transaction details
     const saveRes = await this.saveLayerSwapTx(
@@ -1089,11 +1084,35 @@ export class Client {
       executeResponse.transaction_hash,
     )
 
+    console.log({ saveRes: JSON.stringify(saveRes) })
+
     // Add the transaction hash to the response payload
     saveRes.payload = { transaction_hash: executeResponse.transaction_hash }
 
     // Return the final response
     return saveRes
+  }
+
+  async starknetDeposit(
+    amount: string | number,
+    token_id: string,
+    rpcURL: string,
+    userStarknetPublicAddress: string,
+    userStarknetPrivateKey: string,
+  ) {
+    const provider = new RpcProvider({ nodeUrl: rpcURL })
+    const account = new Account(
+      provider,
+      userStarknetPublicAddress,
+      userStarknetPrivateKey,
+    )
+    return this.starknetDepositWithStarknetSigner(
+      amount,
+      token_id,
+      userStarknetPublicAddress,
+      account,
+      provider,
+    )
   }
 
   async listNormalWithdrawals(

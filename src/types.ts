@@ -224,12 +224,12 @@ export interface ListOrdersParams {
 export interface ListDepositParams {
   limit?: number
   page?: number
-  network?: CrossChainAvailableNetwork | 'ETHEREUM'
+  network?: CrossChainAvailableNetwork | 'ETHEREUM' | LayerSwapAvailableNetwork
 }
 
 export interface ListWithdrawalParams {
   page?: number
-  network?: CrossChainAvailableNetwork | 'ETHEREUM'
+  network?: CrossChainAvailableNetwork | 'ETHEREUM' | LayerSwapAvailableNetwork
 }
 
 export interface TradeParams {
