@@ -688,6 +688,7 @@ const fastWithdrawalRes = await client.fastWithdrawal(
   keyPair, // The keyPair created above
   11, // Enter the amount you want to withdraw
   'usdc', // Enter the coin symbol
-  'POLYGON', // Enter the network you want to withdraw from.
+  'STARKNET', // Enter the network you want to withdraw from.
+  starknetPublicKey, // Your StarkNet public address is required if you are doing a StarkNet fast withdrawal.
 )
 ```
