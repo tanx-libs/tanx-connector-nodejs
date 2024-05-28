@@ -435,7 +435,7 @@ const checkUserRes = await client.checkInternalTransferUserExists(
 
 Granting permission for token spending enables transactions on Ethereum and other chains.
 
-> Supported EVM cross-chain networks: 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', 'MODE'.
+> Supported EVM cross-chain networks: 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', 'MODE', 'STARKNET'.
 
 ```js
 // Note: Please use ethers version 5.5.3.
@@ -507,7 +507,11 @@ const depositRes = await client.depositFromEthereumNetworkWithStarkKey(
 
 #### Cross-Chain Deposit
 
-There are two ways to make a deposit on the Cross-chain:
+There are two protocols to make a deposit on the Cross-chain: one is EVM (Ethereum-supported chain) and the other is Starknet deposit.
+
+#### 1. EVM Cross-Chain Deposit
+
+There are two ways to make a deposit on the EVM Cross-chain:
 
 > Supported EVM cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
 
@@ -544,7 +548,7 @@ const provider = new ethers.providers.JsonRpcProvider(
 
 const signer = new Wallet(privateKey, provider)
 
-const depositPolygonRes = await client.crossChainDepositWithSigner(
+const depositRes = await client.crossChainDepositWithSigner(
   signer, // The signer created above.
   provider, // The provider created above.
   'usdc', // Enter the coin symbol.
@@ -558,13 +562,59 @@ const depositPolygonRes = await client.crossChainDepositWithSigner(
 )
 ```
 
+#### 2. Starknet Cross-Chain Deposit
+
+There are two ways to make a deposit on the Starknet Cross-chain:
+
+> Currently, Starknet deposits are only supported on the tanX mainnet.
+
+#### 1. Using Starknet Private Key and RPC URL:
+
+In this method, you will use a Starknet private key and an RPC URL to execute a Cross-Chain deposit. You'll also need to create an RPC URL using services like Infura, Alchemy, etc. Here's the code snippet for this method:
+
+```javascript
+  const depositRes = await client.starknetDeposit(
+    '14', // Enter the amount you want to deposit.
+    'usdc', // Enter the coin symbol.
+    process.env.STARKNET_RPC_PROVIDER as string, // Replace your RPC URL based on your destination network.
+    starknetPublicKey as string,  // Your starknet public address.
+    starknetPrivateKey as string,  // Your starknet private key.
+  );
+```
+
+#### 2. Using Custom Provider and Signer:
+
+This method involves using a custom provider and signer, which can be created using the starknet.js library. Here's the code snippet for this method:
+
+```javascript
+// Note: Please use starknet.js version 5.14.1.
+import { Account, RpcProvider } from 'starknet'
+
+
+// Replace your RPC URL based on your destination network.
+const provider = new RpcProvider({ nodeUrl: rpcURL  })
+const account = new Account(
+  provider,
+  userStarknetPublicAddress,
+  userStarknetPrivateKey,
+)
+
+const depositRes = await client.starknetDepositWithStarknetSigner(
+  '14', // Enter the amount you want to deposit.
+  'usdc', // Enter the coin symbol.
+   starknetPublicKey as string,  // Your starknet public address.
+   account, // The account created above.
+   provider, // The provider created above.
+);
+```
+
 #### List Deposits
 
 To get the deposit history, you can use the following code:
 
 ```javascript
 const depositsList = await client.listDeposits({
-  network: 'ETHEREUM', // Specify the network for which you want to list the deposit history. Allowed networks include 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', and 'MODE'.
+  network: 'ETHEREUM', // Specify the network for which you want to list the deposit history. Allowed networks include 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', 'STARKNET' and 'MODE'.
   page: 2, // This is an optional field
   limit: 1, // This is an optional field
 })
@@ -623,13 +673,13 @@ const fastWithdrawalRes = await client.fastWithdrawal(
 //Get a list of fast withdrawals
 const fastwithdrawalsList = await client.listFastWithdrawals({
   page: 2, // This is an optional field
-  network: 'ETHEREUM', // Allowed networks include 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', and 'MODE'
+  network: 'ETHEREUM', // Allowed networks include 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', 'STARKNET' and 'MODE'
 })
 ```
 
 #### Cross-chain withdrawal
 
-> Supported EVM cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE'
+> Supported EVM cross-chain networks - 'POLYGON' | 'OPTIMISM' | 'ARBITRUM' | 'LINEA' | 'SCROLL' | 'MODE' | 'STARKNET'
 
 On the cross-chain withdrawal network, we only support fast withdrawals.
 

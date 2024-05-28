@@ -691,6 +691,41 @@ export const responses = {
       transaction_hash: '',
     },
   },
+  layerSwapDepositInfoResponse: {
+    status: 'success',
+    message: 'Successfully retrieve deposit fee',
+    payload: {
+      min_amount: '3.325762',
+      max_amount: '500',
+      fee_amount: '2.325199',
+    },
+  },
+  layerSwapDepositSaveResponse: {
+    status: 'success',
+    message: 'successfully saved hash for the LayerSwap transaction',
+    payload: {},
+  },
+  layerSwapDepositInfoStartMissingParameters: {
+    status: 'error',
+    message: 'Essential parameters are missing',
+    payload: '',
+  },
+  layerSwapDepositiInitiateResponse: {
+    status: 'success',
+    message: 'successfully initiated a swap. please deposit to the address',
+    payload: {
+      ref_id: '1114967030701639821',
+      ls_data: {
+        to_address:
+          '0x019252B1dEef483477C4D30cFcc3e5Ed9C82FAFEA44669c182A45A01b4FdB97a',
+        data: '[{"contractAddress":"0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8","entrypoint":"transfer","calldata":["710843258629671088991136840342586245070522210378167334926343399070771296634","4000000","0"]},{"contractAddress":"0x022993789c33e54e0d296fc266a9c9a2e9dcabe2e48941f5fa1bd5692ac4a8c4","entrypoint":"watch","calldata":["4783594"]}]',
+        value: '4.0',
+        base_units: '4000000000000000000',
+        chain_id: '0x534e5f4d41494e',
+        network: 'STARKNET_MAINNET',
+      },
+    },
+  },
   depositFromPolygonNetworkStartMissingParameters: {
     status: 'error',
     message: 'Essential parameters are missing',

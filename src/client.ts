@@ -48,6 +48,10 @@ import {
   NetworkStat,
   NetworkCoinStat,
   CrossChainAvailableNetwork,
+  LayerSwapDepositFeeParams,
+  LayerSwapDepositFeePayload,
+  InitaiteLayerSwapDepositPayload,
+  LayerSwapAvailableNetwork,
 } from './types'
 import { AxiosInstance } from './axiosInstance'
 import { signMsg } from './bin/blockchain_utils'
@@ -79,6 +83,8 @@ import {
   CoinNotFoundError,
   InvalidAmountError,
 } from './error'
+import { executeStarknetTransaction, getStarknetUserBalance } from './starknet'
+import { Account, AccountInterface, RpcProvider } from 'starknet'
 
 export class Client {
   axiosInstance: AxiosInstanceType
@@ -787,6 +793,7 @@ export class Client {
       amount: body.amount,
       token_id: body.symbol,
       network: body.network,
+      cc_address: body.cc_address,
     })
     return res.data
   }
@@ -803,7 +810,11 @@ export class Client {
     keyPair: ec.KeyPair,
     amount: number | string,
     coinSymbol: string,
-    network: CrossChainAvailableNetwork | 'ETHEREUM',
+    network:
+      | CrossChainAvailableNetwork
+      | LayerSwapAvailableNetwork
+      | 'ETHEREUM',
+    cc_address?: string,
   ): Promise<Response<ProcessFastWithdrawalResponse>> {
     if (!(Number(amount) > 0)) {
       throw new InvalidAmountError(
@@ -829,7 +840,9 @@ export class Client {
       amount: Number(amount),
       symbol: coinSymbol.toLowerCase(),
       network: network,
+      cc_address: cc_address,
     })
+
     const signature = signWithdrawalTxMsgHash(
       keyPair,
       initiateResponse.payload.msg_hash,
@@ -905,6 +918,201 @@ export class Client {
       { params: params },
     )
     return res.data
+  }
+
+  async saveLayerSwapTx(ref_id: string, transaction_hash: string) {
+    const res = await this.axiosInstance.post(
+      `/sapi/v1/payment/layer-swap/deposit/save/`,
+      {
+        ref_id,
+        transaction_hash,
+      },
+    )
+
+    return res.data
+  }
+
+  formatLayerSwapInitateData(
+    data: Response<InitaiteLayerSwapDepositPayload>,
+    tokenAddress: string,
+  ): {
+    to: string
+    amount: string
+    ref_id: string
+    data: any
+    tokenAddress: string
+  } {
+    return {
+      to: data?.payload?.ls_data?.to_address,
+      amount: data?.payload?.ls_data?.base_units,
+      ref_id: data?.payload?.ref_id,
+      data: data?.payload?.ls_data?.data,
+      tokenAddress: tokenAddress,
+    }
+  }
+
+  async initaiteLayerSwapDeposit(
+    amount: string | number,
+    token_id: string,
+    cc_address: string,
+    fee_meta: LayerSwapDepositFeePayload,
+  ): Promise<Response<InitaiteLayerSwapDepositPayload>> {
+    this.getAuthStatus()
+    const source_network = 'STARKNET'
+    const res = await this.axiosInstance.post(
+      `/sapi/v1/payment/layer-swap/deposit/`,
+      {
+        amount,
+        token_id,
+        cc_address,
+        fee_meta,
+        source_network,
+      },
+    )
+
+    return res.data
+  }
+
+  async fetchLayerSwapDepositInfo(
+    params?: LayerSwapDepositFeeParams,
+  ): Promise<Response<LayerSwapDepositFeePayload>> {
+    this.getAuthStatus()
+    const res = await this.axiosInstance.get<
+      Response<LayerSwapDepositFeePayload>
+    >(`/sapi/v1/payment/layer-swap/deposit/fee/`, { params: params })
+
+    return res.data
+  }
+
+  async starknetDepositWithStarknetSigner(
+    amount: string | number,
+    token_id: string,
+    userStarknetPublicAddress: string,
+    account: AccountInterface,
+    provider: RpcProvider,
+  ) {
+    const source_network = 'STARKNET'
+    // Fetch the network configuration
+    const network_config = await this.getNetworkConfig()
+
+    // Select the network configuration for StarkNet
+    const selectedNetworkConfig = network_config[source_network]
+
+    // Filter and get the current coin details for deposit
+    const currentCoin = filterCrossChainCoin(
+      selectedNetworkConfig,
+      token_id?.toLowerCase() as string,
+      'DEPOSIT',
+      source_network,
+    )
+
+    const { blockchain_decimal: decimal, token_contract: tokenContract } =
+      currentCoin
+
+    // Get the user's balance on StarkNet
+    const balance = await getStarknetUserBalance(
+      provider,
+      tokenContract,
+      userStarknetPublicAddress,
+      Number(decimal),
+    )
+
+    // Fetch the fee details for LayerSwap deposit
+    const layerSwapFeeDetail = await this.fetchLayerSwapDepositInfo({
+      token_id,
+      source_network,
+    })
+
+    console.log({ layerSwapFeeDetail: JSON.stringify(layerSwapFeeDetail) })
+
+    // Extract the max and min allowed amounts for the deposit
+    const maxAmount = Number(layerSwapFeeDetail.payload?.max_amount)
+    const minAmount = Number(layerSwapFeeDetail.payload?.min_amount)
+
+    // Check if the user's balance is sufficient for the deposit after accounting for fees
+    if (
+      Number(balance) - Number(layerSwapFeeDetail.payload.fee_amount) <
+        Number(amount) ||
+      Number(balance) === 0
+    ) {
+      throw Error('Your blockchain wallet has insufficient balance')
+    }
+
+    // Ensure the deposit amount does not exceed the maximum allowed amount
+    if (maxAmount < Number(amount)) {
+      throw Error(
+        `Amount cannot exceed ${maxAmount} ${token_id?.toUpperCase()}`,
+      )
+    }
+
+    // Ensure the deposit amount is not less than the minimum required amount
+    if (Number(amount) < minAmount) {
+      throw Error(
+        `Amount should be at least ${minAmount} ${token_id?.toUpperCase()}`,
+      )
+    }
+
+    // Initiate the LayerSwap deposit
+    const initiateRes = await this.initaiteLayerSwapDeposit(
+      amount,
+      token_id,
+      userStarknetPublicAddress,
+      layerSwapFeeDetail.payload,
+    )
+
+    console.log({ initiateRes: JSON.stringify(initiateRes) })
+
+    // Format the data required for initiating the deposit
+    const formattedData = this.formatLayerSwapInitateData(
+      initiateRes,
+      tokenContract,
+    )
+
+    // Execute the StarkNet transaction
+    const executeResponse = await executeStarknetTransaction(
+      provider,
+      userStarknetPublicAddress,
+      account,
+      formattedData.data,
+    )
+
+    console.log({ executeResponse: JSON.stringify(executeResponse) })
+
+    // Save the transaction details
+    const saveRes = await this.saveLayerSwapTx(
+      formattedData.ref_id,
+      executeResponse.transaction_hash,
+    )
+
+    console.log({ saveRes: JSON.stringify(saveRes) })
+
+    // Add the transaction hash to the response payload
+    saveRes.payload = { transaction_hash: executeResponse.transaction_hash }
+
+    // Return the final response
+    return saveRes
+  }
+
+  async starknetDeposit(
+    amount: string | number,
+    token_id: string,
+    rpcURL: string,
+    userStarknetPublicAddress: string,
+    userStarknetPrivateKey: string,
+  ) {
+    const provider = new RpcProvider({ nodeUrl: rpcURL })
+    const account = new Account(
+      provider,
+      userStarknetPublicAddress,
+      userStarknetPrivateKey,
+    )
+    return this.starknetDepositWithStarknetSigner(
+      amount,
+      token_id,
+      userStarknetPublicAddress,
+      account,
+      provider,
+    )
   }
 
   async listNormalWithdrawals(
