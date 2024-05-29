@@ -50,8 +50,9 @@ import {
   CrossChainAvailableNetwork,
   LayerSwapDepositFeeParams,
   LayerSwapDepositFeePayload,
-  InitaiteLayerSwapDepositPayload,
+  InitiateLayerSwapDepositPayload,
   LayerSwapAvailableNetwork,
+  bulkCancelParams,
 } from './types'
 import { AxiosInstance } from './axiosInstance'
 import { signMsg } from './bin/blockchain_utils'
@@ -933,7 +934,7 @@ export class Client {
   }
 
   formatLayerSwapInitateData(
-    data: Response<InitaiteLayerSwapDepositPayload>,
+    data: Response<InitiateLayerSwapDepositPayload>,
     tokenAddress: string,
   ): {
     to: string
@@ -951,12 +952,12 @@ export class Client {
     }
   }
 
-  async initaiteLayerSwapDeposit(
+  async initiateLayerSwapDeposit(
     amount: string | number,
     token_id: string,
     cc_address: string,
     fee_meta: LayerSwapDepositFeePayload,
-  ): Promise<Response<InitaiteLayerSwapDepositPayload>> {
+  ): Promise<Response<InitiateLayerSwapDepositPayload>> {
     this.getAuthStatus()
     const source_network = 'STARKNET'
     const res = await this.axiosInstance.post(
@@ -1023,8 +1024,6 @@ export class Client {
       source_network,
     })
 
-    console.log({ layerSwapFeeDetail: JSON.stringify(layerSwapFeeDetail) })
-
     // Extract the max and min allowed amounts for the deposit
     const maxAmount = Number(layerSwapFeeDetail.payload?.max_amount)
     const minAmount = Number(layerSwapFeeDetail.payload?.min_amount)
@@ -1053,14 +1052,12 @@ export class Client {
     }
 
     // Initiate the LayerSwap deposit
-    const initiateRes = await this.initaiteLayerSwapDeposit(
+    const initiateRes = await this.initiateLayerSwapDeposit(
       amount,
       token_id,
       userStarknetPublicAddress,
       layerSwapFeeDetail.payload,
     )
-
-    console.log({ initiateRes: JSON.stringify(initiateRes) })
 
     // Format the data required for initiating the deposit
     const formattedData = this.formatLayerSwapInitateData(
@@ -1076,15 +1073,11 @@ export class Client {
       formattedData.data,
     )
 
-    console.log({ executeResponse: JSON.stringify(executeResponse) })
-
     // Save the transaction details
     const saveRes = await this.saveLayerSwapTx(
       formattedData.ref_id,
       executeResponse.transaction_hash,
     )
-
-    console.log({ saveRes: JSON.stringify(saveRes) })
 
     // Add the transaction hash to the response payload
     saveRes.payload = { transaction_hash: executeResponse.transaction_hash }
@@ -1229,6 +1222,15 @@ export class Client {
     this.getAuthStatus()
     const res = await this.axiosInstance.post<Response<Order>>(
       '/sapi/v1/orders/create/',
+      body,
+    )
+    return res.data
+  }
+
+  async bulkCancel(body: bulkCancelParams): Promise<Response<any>> {
+    this.getAuthStatus()
+    const res = await this.axiosInstance.post<Response<any>>(
+      '/sapi/v1/user/bulkcancel/',
       body,
     )
     return res.data

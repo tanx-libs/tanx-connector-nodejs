@@ -311,7 +311,40 @@ describe('Brine Connector', () => {
           expect(res.payload).to.have.property('id')
         })
       })
+      describe('Bulk Cancel', () => {
+        it('Bulk Cancel - 200', async () => {
+          mock1
+            .onPost('/sapi/v1/user/bulkcancel/')
+            .reply(200, responses.bulkCancelSuccessRes)
+          const res = await client.bulkCancel({
+            market: 'btcusdt',
+            limit: '100',
+          })
+          expect(res).to.have.property('status')
+          expect(res.status).to.eql('success')
+          expect(res).to.have.property('payload')
+        })
 
+        it('Bulk Cancel - 400', async () => {
+          mock1
+            .onPost('/sapi/v1/user/bulkcancel/')
+            .reply(400, responses.bulkCancelErrorRes)
+
+          try {
+            const res = await client.bulkCancel({
+              market: '',
+              limit: '100',
+            })
+          } catch (e: unknown) {
+            const data = (e as AxiosError<Response<string>>)?.response?.data
+            if (data) {
+              expect(data).to.have.property('status')
+              expect(data.status).to.eql('error')
+              expect(data.message).to.include('please provide market')
+            }
+          }
+        })
+      })
       it('List Orders', async () => {
         mock1.onGet('/sapi/v1/orders').reply(200, responses.listOrders)
 
@@ -656,7 +689,7 @@ describe('Brine Connector', () => {
           mock1
             .onPost('/sapi/v1/payment/layer-swap/deposit/')
             .reply(200, responses.layerSwapDepositiInitiateResponse)
-          const res = await client.initaiteLayerSwapDeposit(
+          const res = await client.initiateLayerSwapDeposit(
             '10',
             'usdc',
             '0x..',
@@ -673,7 +706,7 @@ describe('Brine Connector', () => {
             .reply(400, responses.layerSwapDepositInfoStartMissingParameters)
 
           try {
-            const res = await client.initaiteLayerSwapDeposit(
+            const res = await client.initiateLayerSwapDeposit(
               '10',
               '',
               '',
