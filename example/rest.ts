@@ -515,5 +515,24 @@ const starknetWithdrawal = async () => {
   }
 }
 
+const bulkCancelSnippet = async () => {
+  try {
+    const client = new Client('testnet')
+    // login to use private endpoints
+    const _ = await client.completeLogin(
+      ethAddress as string,
+      privateKey as string,
+    )
+    const cancelRes = await client.bulkCancel({
+      market: 'btcusdt',
+      limit: '100', // This is an optional field; the default limit is 100.
+    })
+    console.log({ cancelRes })
+  } catch (error) {
+    console.log((error as AxiosError<Response<string>>)?.response?.data)
+  }
+}
+
 // starknetDeposit()
 // starknetWithdrawal()
+bulkCancelSnippet()

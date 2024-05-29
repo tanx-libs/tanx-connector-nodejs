@@ -119,6 +119,11 @@ export interface CreateNewOrderBody extends CreateOrderNoncePayload {
   api_key?: string
 }
 
+export interface bulkCancelParams {
+  market: string
+  limit?: string
+}
+
 export interface Order {
   id: number
   uuid: string
@@ -443,7 +448,7 @@ export interface LayerSwapDepositFeeParams {
   source_network: LayerSwapAvailableNetwork
 }
 
-export interface InitaiteLayerSwapDepositPayload {
+export interface InitiateLayerSwapDepositPayload {
   ref_id: string
   ls_data: LsData
 }
