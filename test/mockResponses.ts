@@ -420,6 +420,16 @@ export const responses = {
       trades_count: 0,
     },
   },
+  bulkCancelSuccessRes: {
+    status: 'success',
+    message: 'Orders are successfully queued for cancellation',
+    payload: {},
+  },
+  bulkCancelErrorRes: {
+    status: 'error',
+    message: 'please provide market, market is a mandatory field',
+    payload: '',
+  },
   listOrders: {
     status: 'success',
     message: 'Orders Retrieved Successfully',
