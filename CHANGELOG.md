@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.5.0
+
+### Minor Changes
+
+- Add Bulk Cancel
+
 ## 1.4.1
 
 ### Patch Changes
