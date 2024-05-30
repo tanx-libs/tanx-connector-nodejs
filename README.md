@@ -446,7 +446,7 @@ const checkUserRes = await client.checkInternalTransferUserExists(
 
 Granting permission for token spending enables transactions on Ethereum and other chains.
 
-> Supported EVM cross-chain networks: 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', 'MODE', 'STARKNET'.
+> Supported EVM cross-chain networks: 'ETHEREUM', 'POLYGON', 'OPTIMISM', 'ARBITRUM', 'LINEA', 'SCROLL', 'MODE'.
 
 ```js
 // Note: Please use ethers version 5.5.3.
