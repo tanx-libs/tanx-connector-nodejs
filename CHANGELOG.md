@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.5.1
+
+### Patch Changes
+
+- update docs
+
 ## 1.5.0
 
 ### Minor Changes
