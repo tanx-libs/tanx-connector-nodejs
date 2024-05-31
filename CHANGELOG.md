@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.6.0
+
+### Minor Changes
+
+- added stop_limit and post_only in order type
+
 ## 1.5.1
 
 ### Patch Changes
