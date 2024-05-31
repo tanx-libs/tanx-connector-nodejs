@@ -1,7 +1,7 @@
 export type Market = 'ethusdc' | 'ethusdt' | 'btcusdc' | 'btcusdt'
 
 export type Side = 'buy' | 'sell'
-export type OrdType = 'market' | 'limit'
+export type OrdType = 'market' | 'limit' | 'limit_maker' | 'stop_limit'
 export type State = 'pending' | 'wait' | 'done' | 'cancel'
 export type Network = 'mainnet' | 'testnet'
 export type CrossChainAvailableNetwork =
@@ -103,6 +103,7 @@ export interface CreateOrderNonceBody {
   volume: number
   organization_key?: string
   api_key?: string
+  stop_price?: number
 }
 
 export interface CreateOrderNoncePayload {
@@ -141,6 +142,8 @@ export interface Order {
   maker_fee: string
   taker_fee: string
   trades_count: number
+  stop_price: string
+  cancel_reason: string | null
 }
 
 export interface StarkSignature {
