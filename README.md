@@ -251,6 +251,7 @@ bulkCancel: `POST /sapi/v1/user/bulkcancel/`
 const order = await client.bulkCancel({
   market: 'btcusdt', // specify the market to cancel
   limit: '100', // This is an optional field; the default limit is 100.
+  side: 'buy', // This is an optional field, which the orders need to be cancelled
 })
 ```
 

@@ -526,6 +526,7 @@ const bulkCancelSnippet = async () => {
     const cancelRes = await client.bulkCancel({
       market: 'btcusdt',
       limit: '100', // This is an optional field; the default limit is 100.
+      side: 'buy', // This is an optional field, which the orders need to be cancelled
     })
     console.log({ cancelRes })
   } catch (error) {

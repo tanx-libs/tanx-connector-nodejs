@@ -123,6 +123,7 @@ export interface CreateNewOrderBody extends CreateOrderNoncePayload {
 export interface bulkCancelParams {
   market: string
   limit?: string
+  side?: Side
 }
 
 export interface Order {
