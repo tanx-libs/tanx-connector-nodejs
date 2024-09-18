@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.7.0
+
+### Minor Changes
+
+- rename matic to pol
+
 ## 1.6.1
 
 ### Patch Changes
