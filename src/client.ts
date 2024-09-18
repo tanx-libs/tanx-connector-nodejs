@@ -514,7 +514,7 @@ export class Client {
     const params = {
       value: parsedAmount,
       from: signer.address,
-      gasOptions,
+      ...gasOptions,
     }
 
     const balance = await this.getEVMTokenBalance(
@@ -739,7 +739,7 @@ export class Client {
       provider,
       currency,
       String(amount),
-      gasOptions
+      gasOptions,
     )
   }
 
