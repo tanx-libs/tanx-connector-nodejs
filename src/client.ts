@@ -283,7 +283,7 @@ export class Client {
     ethAddress: string,
     currency: string,
   ) {
-    if (currency === 'matic') {
+    if (currency === 'pol') {
       const res = await provider.getBalance(ethAddress)
       return +ethers.utils.formatEther(res)
     }
@@ -459,7 +459,7 @@ export class Client {
 
   getNativeCurrencyByNetwork(network: CrossChainAvailableNetwork): string {
     const networkConfig = {
-      POLYGON: 'matic',
+      POLYGON: 'pol',
       OPTIMISM: 'eth',
       ARBITRUM: 'eth',
       LINEA: 'eth',
@@ -514,7 +514,7 @@ export class Client {
     const params = {
       value: parsedAmount,
       from: signer.address,
-      gasOptions,
+      ...gasOptions,
     }
 
     const balance = await this.getEVMTokenBalance(
@@ -631,6 +631,7 @@ export class Client {
     provider: ethers.providers.Provider,
     currency: string,
     amount: string | number,
+    gasOptions?: ethers.Overrides,
   ) {
     if (!(Number(amount) > 0)) {
       throw new InvalidAmountError(
@@ -670,6 +671,7 @@ export class Client {
     const params = {
       value: parsedAmount,
       from: signer.address,
+      ...gasOptions,
     }
 
     const balance = await this.getPolygonTokenBalance(
@@ -686,8 +688,8 @@ export class Client {
 
     let depositResponse
 
-    if (currency === 'matic') {
-      depositResponse = await polygonContract.depositEth(params)
+    if (currency === 'pol') {
+      depositResponse = await polygonContract.depositNative(params)
     } else {
       const allowance = await getAllowance(
         signer.address,
@@ -727,6 +729,7 @@ export class Client {
     // network: Network,
     currency: string,
     amount: string | number,
+    gasOptions?: ethers.Overrides,
   ) {
     this.getAuthStatus()
     const provider = new ethers.providers.JsonRpcProvider(rpcURL)
@@ -736,6 +739,7 @@ export class Client {
       provider,
       currency,
       String(amount),
+      gasOptions,
     )
   }
 
