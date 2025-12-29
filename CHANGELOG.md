@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 1.7.1
+
+### Patch Changes
+
+- docs: update README to highlight institutional account requirements
+
 ## 1.7.0
 
 ### Minor Changes
