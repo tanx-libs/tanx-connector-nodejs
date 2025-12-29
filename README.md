@@ -1,5 +1,12 @@
 <h1 align="center">tanX Connector NodeJS</h1>
 
+
+> **Trading and deposits are currently available only to institutional accounts.**
+>
+> tanX is transitioning to an institution-first model to support compliant, large-scale market participation.
+> To become an institutional account, please contact [support@tanx.fi](mailto:support@tanx.fi)
+
+
 <p align="center">
   The official NodeJS connector for <a href="https://docs.tanx.fi/tech/api-documentation">tanX's API</a> 🚀
 </p>
