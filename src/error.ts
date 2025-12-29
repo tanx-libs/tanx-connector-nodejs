@@ -26,9 +26,9 @@ class InstitutionalOnlyError extends Error {
   constructor(message?: string) {
     super(
       message ||
-        'Trading and deposits are currently available only to institutional accounts. Please contact support@tanx.fi for assistance.'
-    );
-    this.name = 'InstitutionalOnlyError';
+        'Trading and deposits are currently available only to institutional accounts. Please contact support@tanx.fi for assistance.',
+    )
+    this.name = 'InstitutionalOnlyError'
   }
 }
 
