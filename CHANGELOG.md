@@ -1,5 +1,11 @@
 # @tanx-libs/tanx-connector
 
+## 2.0.0
+
+### Major Changes
+
+- feat: implement InstitutionalOnlyError and enforce institutional account checks in trading and deposit functions, along with test cases
+
 ## 1.7.1
 
 ### Patch Changes

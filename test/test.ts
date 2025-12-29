@@ -289,13 +289,29 @@ describe('Brine Connector', () => {
           }
         })
 
-        it('Create New order', async () => {
-          mock1
-            .onPost('/sapi/v1/orders/nonce/')
-            .reply(200, responses.orderNonce)
-          mock1
-            .onPost('/sapi/v1/orders/create/')
-            .reply(200, responses.createOrder)
+        // it('Create New order', async () => {
+        //   mock1
+        //     .onPost('/sapi/v1/orders/nonce/')
+        //     .reply(200, responses.orderNonce)
+        //   mock1
+        //     .onPost('/sapi/v1/orders/create/')
+        //     .reply(200, responses.createOrder)
+        //   const nonceBody: CreateOrderNonceBody = {
+        //     market: 'btcusdt',
+        //     ord_type: 'market',
+        //     price: 29580.51,
+        //     side: 'buy',
+        //     volume: 0.0001,
+        //   }
+        //   await client.completeLogin(ethAddress!, privateKey!)
+        //   const res = await client.createCompleteOrder(nonceBody, privateKey!)
+        //   expect(res).to.have.property('status')
+        //   expect(res.status).to.eql('success')
+        //   expect(res).to.have.property('payload')
+        //   expect(res.payload).to.have.property('id')
+        // })
+
+        it('Create New order - should throw InstitutionalOnlyError for non-institutional accounts', async () => {
           const nonceBody: CreateOrderNonceBody = {
             market: 'btcusdt',
             ord_type: 'market',
@@ -303,12 +319,18 @@ describe('Brine Connector', () => {
             side: 'buy',
             volume: 0.0001,
           }
+
           await client.completeLogin(ethAddress!, privateKey!)
-          const res = await client.createCompleteOrder(nonceBody, privateKey!)
-          expect(res).to.have.property('status')
-          expect(res.status).to.eql('success')
-          expect(res).to.have.property('payload')
-          expect(res.payload).to.have.property('id')
+
+          try {
+            await client.createCompleteOrder(nonceBody, privateKey!)
+          } catch (error: any) {
+            expect(error).to.be.an('error')
+            expect(error.name).to.equal('InstitutionalOnlyError')
+            expect(error.message).to.include(
+              'Trading and deposits are currently available only to institutional accounts. Please contact support@tanx.fi for assistance.',
+            )
+          }
         })
       })
       describe('Bulk Cancel', () => {

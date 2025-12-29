@@ -82,6 +82,7 @@ import {
   AllowanceTooLowError,
   BalanceTooLowError,
   CoinNotFoundError,
+  InstitutionalOnlyError,
   InvalidAmountError,
 } from './error'
 import { executeStarknetTransaction, getStarknetUserBalance } from './starknet'
@@ -345,11 +346,14 @@ export class Client {
     amount: string | number,
     currency: string,
   ) {
+    throw new InstitutionalOnlyError();
+
     if (!(Number(amount) > 0)) {
       throw new InvalidAmountError(
         `Please enter a valid amount. It should be a numerical value greater than zero.`,
       )
     }
+    
     this.getAuthStatus()
     const { payload: coinStats } = await this.getCoinStatus()
     const currentCoin = filterEthereumCoin(coinStats, currency)
@@ -442,6 +446,7 @@ export class Client {
     currency: string,
     amount: string | number,
   ) {
+    throw new InstitutionalOnlyError();
     this.getAuthStatus()
     const userSignature = createUserSignature(ethPrivateKey, network) // or sign it yourself
     const keyPair = getKeyPairFromSignature(userSignature.signature)
@@ -478,6 +483,7 @@ export class Client {
     network: CrossChainAvailableNetwork,
     gasOptions?: ethers.Overrides,
   ) {
+    throw new InstitutionalOnlyError();
     if (!(Number(amount) > 0)) {
       throw new InvalidAmountError(
         `Please enter a valid amount. It should be a numerical value greater than zero.`,
@@ -577,6 +583,7 @@ export class Client {
     network: CrossChainAvailableNetwork,
     gasOptions?: ethers.Overrides,
   ) {
+    throw new InstitutionalOnlyError();
     this.getAuthStatus()
     const provider = new ethers.providers.JsonRpcProvider(rpcURL)
     const signer = new Wallet(ethPrivateKey, provider)
@@ -633,6 +640,7 @@ export class Client {
     amount: string | number,
     gasOptions?: ethers.Overrides,
   ) {
+    throw new InstitutionalOnlyError();
     if (!(Number(amount) > 0)) {
       throw new InvalidAmountError(
         `Please enter a valid amount. It should be a numerical value greater than zero.`,
@@ -731,6 +739,7 @@ export class Client {
     amount: string | number,
     gasOptions?: ethers.Overrides,
   ) {
+    throw new InstitutionalOnlyError();
     this.getAuthStatus()
     const provider = new ethers.providers.JsonRpcProvider(rpcURL)
     const signer = new Wallet(ethPrivateKey, provider)
@@ -996,6 +1005,7 @@ export class Client {
     account: AccountInterface,
     provider: RpcProvider,
   ) {
+    throw new InstitutionalOnlyError();
     const source_network = 'STARKNET'
     // Fetch the network configuration
     const network_config = await this.getNetworkConfig()
@@ -1097,6 +1107,7 @@ export class Client {
     userStarknetPublicAddress: string,
     userStarknetPrivateKey: string,
   ) {
+    throw new InstitutionalOnlyError();
     const provider = new RpcProvider({ nodeUrl: rpcURL })
     const account = new Account(
       provider,
@@ -1214,6 +1225,7 @@ export class Client {
     nonce: CreateOrderNonceBody,
     privateKey: string,
   ): Promise<Response<Order>> {
+    throw new InstitutionalOnlyError();
     this.getAuthStatus()
     const nonceRes = await this.createOrderNonce(nonce)
     const signedMsg = signMsgHash(nonceRes.payload, privateKey, this.option)
@@ -1223,6 +1235,8 @@ export class Client {
   }
 
   async createNewOrder(body: CreateNewOrderBody): Promise<Response<Order>> {
+    throw new InstitutionalOnlyError();
+
     this.getAuthStatus()
     const res = await this.axiosInstance.post<Response<Order>>(
       '/sapi/v1/orders/create/',

@@ -22,6 +22,16 @@ class InvalidAmountError extends Error {
   }
 }
 
+class InstitutionalOnlyError extends Error {
+  constructor(message?: string) {
+    super(
+      message ||
+        'Trading and deposits are currently available only to institutional accounts. Please contact support@tanx.fi for assistance.'
+    );
+    this.name = 'InstitutionalOnlyError';
+  }
+}
+
 class AllowanceTooLowError extends Error {
   constructor(message: string) {
     super(message)
@@ -49,6 +59,7 @@ export default {
   AllowanceTooLowError,
   BalanceTooLowError,
   InvalidAmountError,
+  InstitutionalOnlyError,
 }
 
 export {
@@ -58,4 +69,5 @@ export {
   AllowanceTooLowError,
   BalanceTooLowError,
   InvalidAmountError,
+  InstitutionalOnlyError,
 }
